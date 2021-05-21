@@ -7,7 +7,6 @@ import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep
 from skimage.util import random_noise
 from skimage.filters import gaussian
-from ipywidgets import interact
 
 def arma_fibra_dinamica(x, y, frames, salto):
 # la cambie para que empiece del (x,y) y los frames siguientes pueda controlar cuanto saltan con salto
