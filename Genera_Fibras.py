@@ -64,3 +64,4 @@ def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20):
         im_fibra = np.array(255*im_fibra, dtype = 'uint8')
         imagenes.append(im_fibra)
     return imagenes
+#%%
