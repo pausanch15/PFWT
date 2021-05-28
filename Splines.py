@@ -20,6 +20,9 @@ def cortar_fibra(fibra): # la fibra con el thin ya hecho
     b1.reverse()
     b2.reverse()
     b = np.array([b1,b2]) #son los bordes en lista [[b1x,b1y],[b2x,b2y]]
+    print(b1,b2)
+    
+    
     
     nudos = np.array(np.where(convoled_fibra >= 4)) # encuentro los nudos con los puntos >= 4
     for i in range(len(nudos[0])):
