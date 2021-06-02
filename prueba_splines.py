@@ -32,11 +32,11 @@ def guarda_imagenes(imagenes, nombre_tira):
         # print_im(im)
         ima = Image.fromarray(im)
         ima.save(nom, 'png')
-        return nombres
+    return nombres
 
 #Primero genero algunas imagenes, las guardo y las traigo
 np.random.seed(3)
-n = 3
+n = 5
 imas = gf.crear_im_fibra(n+1,fondo=0.05)
 im_nombres = guarda_imagenes(imas, 'test')
 
