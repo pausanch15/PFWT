@@ -7,7 +7,6 @@ import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep, CubicSpline
 from skimage.util import random_noise
 from skimage.filters import gaussian
-from ipywidgets import interact
 import Genera_Fibras as gf
 import Splines as spl
 from PIL import Image
