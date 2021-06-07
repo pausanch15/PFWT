@@ -17,7 +17,6 @@ from itertools import permutations
 
 #Funciones útiles
 def print_im(frame):
-    # global imagenes
     plt.figure()
     plt.imshow(frame)
     plt.set_cmap('gray')
@@ -28,7 +27,6 @@ def guarda_imagenes(imagenes, nombre_tira):
     num = [str(i) for i in range(len(imagenes))]
     nombres = [f'{nombre_tira}_{nu}.png' for nu in num]
     for im, nom in zip(imagenes, nombres):
-        # print_im(im)
         ima = Image.fromarray(im)
         ima.save(nom, 'png')
     return nombres
@@ -42,12 +40,6 @@ im_nombres = guarda_imagenes(imas, 'test')
 imagenes = []
 for im in im_nombres:
     imagenes.append(Image.open(im))
-
-# for im in imagenes:
-    # im = np.asarray(im)
-    # im = im<97 #Esto va a tener que ser un input de la funcion
-    # fibra = thin(remove_small_objects(im, connectivity=4))
-    # print_im(fibra)
 
 #Armo la funcion que agarra la imagen, la convierte en un array, la binariza, se queda solo con la fibra y le hace el thin.
 #No se me ocurre como hacer que el parametro para binarizar no sea un input. Como default le dejo 97 porque pareciera que funciona bien con las imagenes 
