@@ -1,4 +1,4 @@
-#Tomo el código de prueba_splines (el que hace todo y tiene la función que encuentra la fibra en la imagen), trato de quedarme con las posiciones de los puntos de las fibras y guardarlos con h5py.
+#Tomo las cosas que sirvieron de prueba_guardar_datos y recorro un poco el archivo de h5py que crea.
 #https://docs.h5py.org/en/stable/
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ from itertools import permutations
 import prueba_splines as ps
 import h5py
 
-#Armamos imagenes de la fibra dinamica y encontramos la fibra en ellas.
+#Armamos imagenes de la fibra dinamica y encontramos la fibra en ellas. Depsues guardamos los x e y de cada frame con h5py.
 np.random.seed(3)
 n = 5
 imas = gf.crear_im_fibra(n+1,fondo=0.05)
@@ -29,35 +29,6 @@ for im in im_nombres:
 
 fibras = ps.encuentra_fibra(imagenes)
 
-for fibra in fibras:
-    tramos,bordes = spl.cortar_fibra(fibra)
-    for tr in range(len(tramos)):
-        x,y = tramos[tr][:,0], tramos[tr][:,1]
-        plt.plot(x, y, 'o', color='grey')
-    tramos = spl.ordenar_fibra(tramos)
-    t, curv, xf, yf = spl.pegar_fibra(tramos,bordes)
-    
-    plt.plot(xf, yf, 'r-')
-    
-    plt.gca().invert_yaxis()
-    plt.grid(True)
-    plt.tick_params(left = False, right = False , labelleft = False ,
-                    labelbottom = False, bottom = False)
-    plt.show()
-
-#Trato de guardar los x e y de cada fibra en archivos de hf5.
-#Estos van de prueba.
-
-f = h5py.File('Datos.hdf5', 'w')
-grp = f.create_group("Fibra_0")
-subgrp_0 = grp.create_group("x")
-subgrp_1 = grp.create_group("y")
-print(f'Grupo: {grp.name}')
-print(f'Primer Subgrupo: {subgrp_0.name}')
-print(f'Segundo Subgrupo: {subgrp_1.name}')
-f.close()
-
-#Ahora trato de usarlos
 f = h5py.File('Datos.hdf5', 'w')
 grp = f.create_group("Fibra_0")
 
@@ -77,4 +48,19 @@ for fibra, nom in zip(fibras, range(len(fibras))):
     subgrp_y.create_dataset("y", data=yf)
     
 f.close()
-    
+
+#Recorremos un poco Datos.hdf5. Para eso lo abrimos en modo lectura.
+f = h5py.File('Datos.hdf5', 'r')
+
+#Primero vemos que tiene un único grupo en este caso: Fibra_0.
+print(f'El group en Datos.hdf5 es {list(f.keys())[0]}')
+
+#Sabemos por lo que hicimos antes que tenemos los 6 subgrupos, uno por cada frame (fibra), dentro de Fibra_0. Los nombres de los subgrupos son los que pusimos: 0, 1, 2, 3, 4, 5.
+#Entramos al subgrupo 0 y vemos que tiene.
+g0 = f.get('Fibra_0/0') #Este es el subgrupo correspondiente al primer frame
+print(f'Los items que hay en grupo correspondiente al prmer frame son son {list(g0.items())[0][0]} e {list(g0.items())[1][0]}')
+
+#Y faltaría como ver cada dataframe dontro de g0, pero ya no tengo ganas hoy. Queda para hacerse estos días.
+
+#Finalmente cerramos el archivo.
+f.close()
