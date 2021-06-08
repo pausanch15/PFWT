@@ -52,47 +52,57 @@ plt.show()
 
 np.random.seed(12)
 n = 40
-imagenes = gf.crear_im_fibra(n+1,fondo=0.05,salto=5)
+imagenes = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5)
 #%%
-ff = 21 #problemas: 16,21,24?
-imt = imagenes[ff] < 115
+ff = 24 #problemas: 16,21,24? 9
+imt = imagenes[ff] < 113
 iml = label(imt)
 prop_reg = regionprops(iml)
 for i in range(len(prop_reg)):
     if prop_reg[i].area > 100:
-        fibra = iml==i+1
-fibra = skeletonize(fibra)
+        fibra_g = iml==i+1
+fibra = skeletonize(fibra_g)
 
 #plt.figure()
 plt.set_cmap('gray')
-plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
-plt.show()
-plt.figure()
+#plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
+#plt.show()
+#plt.figure()
 #plt.xlim(left=500,rigt=1000)
 #plt.imshow(imt)
-plt.imshow(fibra)
-plt.show()
+plt.imshow(fibra_g)
+#plt.show()
 
-plt.figure()
+#plt.figure()
 tramos,bordes = spl.cortar_fibra2(fibra)
 #
-for tr in range(len(tramos)):
-    x,y = tramos[tr][:,0],tramos[tr][:,1]
-    plt.plot(x,y,'o',color='grey')
-#
+#for tr in range(len(tramos)):
+#    x,y = tramos[tr][:,0],tramos[tr][:,1]
+#    plt.plot(x,y,'o',color='grey')
+##
 tramos = spl.ordenar_fibra(tramos)
 t,curv,xf,yf = spl.pegar_fibra(tramos,bordes)
 
 plt.plot(xf,yf,'r-',alpha=0.75)
-#plt.xlim(500,1000)
-#plt.ylim(0,350)
+plt.xlim(500,1000)
+plt.ylim(0,350)
 plt.gca().invert_yaxis()
-plt.grid(True)
+#plt.grid(True)
 ##plt.tick_params(left = False, right = False , labelleft = False ,
 ##                labelbottom = False, bottom = False)
 plt.show()
 #%%
+xy_g = np.where(fibra_g == True)
+yfg, xfg = xy_g[0],xy_g[1]
 
+errores = []
+for i in range(len(xfg)):
+    dists = np.sqrt((xf - xfg[i])**2 + (yf - yfg[i])**2)
+    mdist = np.min(dists)
+    errores.append(mdist)
+    
+print( np.mean(errores))
+#%%
 lista_im = []
 for frames in range(len(imagenes)):
     print(frames)
