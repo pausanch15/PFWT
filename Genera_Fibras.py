@@ -8,14 +8,15 @@ from scipy.interpolate import splev, splrep, splprep
 from skimage.util import random_noise
 from skimage.filters import gaussian
 
-def arma_fibra_dinamica(x, y, frames, salto):
+def arma_fibra_dinamica(x, y, frames, salto, drift):
 # la cambie para que empiece del (x,y) y los frames siguientes pueda controlar cuanto saltan con salto
     xs,ys = np.array(x),np.array(y)
     N_puntos = len(x)
     fibra = []
+    dr = np.array(drift)
     for i in range(frames):
         #global x,y
-        xs,ys = xs+(salto*np.random.random(N_puntos)-salto/2), ys+(salto*np.random.random(N_puntos)-salto/2)
+        xs,ys = xs+(salto*np.random.random(N_puntos)-salto/2)+dr[0], ys+(salto*np.random.random(N_puntos)-salto/2)+dr[1]
         spl, u = splprep([xs, ys], s=0)
         t_spl = np.linspace(0, 1, 1000)
         frame = splev(t_spl, spl)
@@ -42,7 +43,7 @@ def fija_largo(fibra): #Solo sirve si las fibras son más largas que la primera
     return nueva_fibra
 
 
-def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20):
+def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=[0,0]):
 # empiezo en algun punto random (que no sea muy cera de los bordes) de mi imagen 1000x1000
     x,y = [],[]
     x.append(np.random.rand()*890+50) 
@@ -51,7 +52,7 @@ def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20):
 # busco quedarme cerca del punto anterior
         x.append(x[0]+np.random.random()*200-100)
         y.append(y[0]+np.random.random()*200-100)
-    fibra = fija_largo(arma_fibra_dinamica(x,y, frames,salto))
+    fibra = fija_largo(arma_fibra_dinamica(x,y, frames,salto,drift))
     imagenes = []
     for frame in fibra:
         im_fibra, xedges, yedges = np.histogram2d(*frame, 1000, [[0,1000],[0,1000]])
