@@ -50,15 +50,15 @@ plt.show()
 #%%
 #Veo con una fibra generada
 # Buenas: 12, 15
-np.random.seed(25)
+np.random.seed(12)
 n = 40
-imagenes = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[-5,0])
+imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[0,0])
 #%%
 imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando.gif',imagenes,fps=12)
 #%%
 #con seed = 12 en frame 24, 25 o 26 (donde empieza el cruce), preguntar si importa que no cubra toda fibra.
 # Mismo problema con seed 15 frame 10, 11 o 18
-ff = 23 #problemas:  
+ff = 25  
 imt = imagenes[ff] < 113
 iml = label(imt)
 prop_reg = regionprops(iml)
@@ -67,9 +67,9 @@ for i in range(len(prop_reg)):
         fibra_g = iml==i+1
 fibra = thin(fibra_g)
 
-plt.figure()
-plt.set_cmap('gray')
-plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
+#plt.figure()
+#plt.set_cmap('gray')
+#plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
 #plt.show()
 #plt.figure()
 #plt.xlim(left=500,rigt=1000)
@@ -77,7 +77,7 @@ plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
 #plt.imshow(fibra)
 #plt.show()
 #
-#plt.figure()
+plt.figure()
 tramos,bordes = spl.cortar_fibra2(fibra)
 #
 #for tr in range(len(tramos)):
@@ -87,10 +87,18 @@ tramos,bordes = spl.cortar_fibra2(fibra)
 tramos = spl.ordenar_fibra(tramos)
 t,curv,xf,yf = spl.pegar_fibra(tramos,bordes)
 
-plt.plot(xf,yf,'r-',alpha=0.75)
+fibff = fib[ff] 
+plt.plot(fibff[1],fibff[0],'r-')
+plt.plot(xf,yf,'g-',alpha=0.75)
+plt.show()
+plt.show()
+plt.plot(fibff[1])
+plt.plot(xf[::-1])
+plt.plot(fibff[0],'r-')
+plt.plot(yf[::-1],'g-')
 #plt.xlim(500,1000)
 #plt.ylim(0,350)
-plt.gca().invert_yaxis()
+#plt.gca().invert_yaxis()
 #plt.grid(True)
 ##plt.tick_params(left = False, right = False , labelleft = False ,
 ##                labelbottom = False, bottom = False)
