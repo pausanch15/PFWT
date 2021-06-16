@@ -37,7 +37,10 @@ for tr in range(len(tramos)):
     plt.plot(x,y,'o',color='grey')
 
 tramos = spl.ordenar_fibra(tramos)
-t,curv,xf,yf = spl.pegar_fibra(tramos,bordes)
+curv,spline = spl.pegar_fibra(tramos,bordes)
+
+t_spl = np.linspace(0,1,10000)
+xf,yf = splev(t_spl,spline)
 
 plt.plot(xf,yf,'r-')
 
@@ -52,13 +55,13 @@ plt.show()
 # Buenas: 12, 15
 np.random.seed(12)
 n = 40
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[0,0])
+imagenes, fib = gf.crear_im_fibra2(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[0,0])
 #%%
 imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando.gif',imagenes,fps=12)
 #%%
 #con seed = 12 en frame 24, 25 o 26 (donde empieza el cruce), preguntar si importa que no cubra toda fibra.
 # Mismo problema con seed 15 frame 10, 11 o 18
-ff = 25  
+ff = 24  
 imt = imagenes[ff] < 113
 iml = label(imt)
 prop_reg = regionprops(iml)
@@ -67,17 +70,17 @@ for i in range(len(prop_reg)):
         fibra_g = iml==i+1
 fibra = thin(fibra_g)
 
-#plt.figure()
-#plt.set_cmap('gray')
-#plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
+plt.figure()
+plt.set_cmap('gray')
+plt.imshow(imagenes[ff]) #,extent=[500,1000,0,350])
 #plt.show()
 #plt.figure()
 #plt.xlim(left=500,rigt=1000)
 #plt.imshow(imt)
 #plt.imshow(fibra)
 #plt.show()
-#
-plt.figure()
+
+#plt.figure()
 tramos,bordes = spl.cortar_fibra2(fibra)
 #
 #for tr in range(len(tramos)):
@@ -85,17 +88,14 @@ tramos,bordes = spl.cortar_fibra2(fibra)
 #    plt.plot(x,y,'o',color='grey')
 ##
 tramos = spl.ordenar_fibra(tramos)
-t,curv,xf,yf = spl.pegar_fibra(tramos,bordes)
+curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=8)
 
-fibff = fib[ff] 
-plt.plot(fibff[1],fibff[0],'r-')
-plt.plot(xf,yf,'g-',alpha=0.75)
-plt.show()
-plt.show()
-plt.plot(fibff[1])
-plt.plot(xf[::-1])
-plt.plot(fibff[0],'r-')
-plt.plot(yf[::-1],'g-')
+t_spl = np.linspace(0,1,10000)
+xf,yf = splev(t_spl,spline)
+yo,xo = splev(t_spl,fib[ff])
+
+plt.plot(xf,yf,'r-',alpha=0.75)
+plt.plot(xo,yo,'b-',alpha=0.75)
 #plt.xlim(500,1000)
 #plt.ylim(0,350)
 #plt.gca().invert_yaxis()
@@ -104,16 +104,86 @@ plt.plot(yf[::-1],'g-')
 ##                labelbottom = False, bottom = False)
 plt.show()
 #%%
-xy_g = np.where(fibra_g == True)
-yfg, xfg = xy_g[0],xy_g[1]
+t_spl = np.linspace(0,1,100000)
+xf,yf = splev(t_spl,spline)
+yo,xo = splev(t_spl,fib[ff])
 
-errores = []
-for i in range(len(xfg)):
-    dists = np.sqrt((xf - xfg[i])**2 + (yf - yfg[i])**2)
-    mdist = np.min(dists)
-    errores.append(mdist)
+plt.figure()
+plt.hist(xf-xo,bins=100,color='blue',label='x')
+plt.hist(yf-yo,bins=100,color='red',label='y')
+plt.legend()
+plt.show()
+plt.figure()
+plt.hist((xf-xo)+(yf-yo),bins=50)
+plt.title('(xf-xo)+(yf-yo)')
+plt.show()
+#plt.figure()
+#plt.plot(xf,yf,'r-')
+#plt.plot(xo,yo,'b-')
+#plt.show()
+#plt.figure()
+#plt.plot(t_spl,xf,'r-')
+#plt.plot(t_spl,xo,'r--')
+#plt.show()
+#plt.figure()
+#plt.plot(t_spl,yf,'g-')
+#plt.plot(t_spl,yo,'g--')
+#plt.show()
+#%%
+spli_rec = []
+for i in range(len(imagenes)):
+    print(i)
+    imt = imagenes[i] < 113
+    iml = label(imt)
+    prop_reg = regionprops(iml)
+    for i in range(len(prop_reg)):
+        if prop_reg[i].area > 100:
+            fibra_g = iml==i+1
+    fibra = thin(fibra_g)
     
-print( np.mean(errores))
+    tramos,bordes = spl.cortar_fibra2(fibra)
+    tramos = spl.ordenar_fibra(tramos)
+    curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=8)
+    spli_rec.append(spline)
+#%%
+dx, dy, dxdy = [], [], []
+t_spl = np.linspace(0,1,10000)
+for i in range(len(fib)):
+    xf,yf = splev(t_spl,spli_rec[i])
+    yo,xo = splev(t_spl,fib[i])
+    if np.max(np.abs(xf-xo)) > 50:
+        xo = xo[::-1]
+        yo = yo[::-1]
+    dx = dx + list(xf-xo)
+    dy = dy + list(yf-yo)
+    dxdy = dxdy + list( (xf-xo)+(yf-yo) )
+    
+plt.figure()
+plt.hist(dx,bins=100,color='blue',label='x',alpha=0.5)
+plt.hist(dy,bins=100,color='red',label='y',alpha=0.5)
+plt.legend()
+plt.show()
+plt.figure()
+plt.hist(dxdy,bins=100)
+plt.title('(xf-xo)+(yf-yo)')
+plt.show()
+#%%
+ff = 28
+t_spl = np.linspace(0,1,10000)
+xf,yf = splev(t_spl,spli_rec[ff])
+yo,xo = splev(t_spl,fib[ff])
+
+plt.plot(t_spl,xf,'r-')
+plt.plot(t_spl,xo,'r--')
+plt.show()
+plt.figure()
+plt.plot(t_spl,yf,'g-')
+plt.plot(t_spl,yo,'g--')
+plt.show()
+#plt.figure()
+#plt.plot(xf,yf,'r-')
+#plt.plot(xo,yo,'b-')
+#plt.show()
 #%%
 lista_im = []
 for frames in range(len(imagenes)):
