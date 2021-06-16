@@ -176,12 +176,12 @@ def curvatura(fib,window=21,s=10):
     spline_1d = splev(t_spl,spl,der=1)
     spline_2d = splev(t_spl,spl,der=2)
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
-    return curv, np.mean(curv), np.std(curv), t_spl, spline
+    return curv, np.mean(curv), np.std(curv), spl # t_spl, spline
 
 def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
     if len(tramos) == 1:
-        cur,m_curv,_,t_spl,spline = curvatura(tramos[0],window=window,s=s)
-        return t_spl, cur, spline[0],spline[1]
+        cur,m_curv,_,spl = curvatura(tramos[0],window=window,s=s)
+        return cur, spl#t_spl, spline[0],spline[1]
     
     if len(bordes) == 1:
         tra_medios = []
@@ -215,13 +215,13 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
                     orden.append(pos_tra_med[j][l])
                 orden.insert(0,pri_tramo)
                 fib = np.concatenate(tuple(orden))
-                cur,m_curv,_,t_spl,spline = curvatura(fib,window=window,s=s)
+                cur,m_curv,_,spl = curvatura(fib,window=window,s=s)
                 if m_curv < min_curv:
                     min_curv = m_curv
-                    t, curvatur = t_spl, cur
-                    xf,yf = spline[0],spline[1]
+                    curvatur = cur
+#                    t,xf,yf = t_spl,spline[0],spline[1]
 
-        return t, curvatur, xf,yf
+        return curvatur, spl #t,xf,yf
 
 
     tra_medios = []
@@ -262,13 +262,13 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
             orden.insert(0,pri_tramo)
             orden.append(ult_tramo)
             fib = np.concatenate(tuple(orden))
-            cur,m_curv,_,t_spl,spline = curvatura(fib,window=window,s=s)
+            cur,m_curv,_,spl = curvatura(fib,window=window,s=s)
             if m_curv < min_curv:
                 min_curv = m_curv
-                t, curvatur = t_spl, cur
-                xf,yf = spline[0],spline[1]
+                curvatur = cur
+#                t,xf,yf = t_spl,spline[0],spline[1]
 
-    return t, curvatur, xf,yf
+    return curvatur, spl #t,xf,yf
 
 
 def crear_fibra(n=4,bins=50):
