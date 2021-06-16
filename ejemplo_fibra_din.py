@@ -9,23 +9,20 @@ from skimage.filters import gaussian
 from ipywidgets import interact
 import Genera_Fibras as gf
 #%%
-
 np.random.seed(12)
-n = 1
-imagenes = gf.crear_im_fibra(n+1,fondo=0.05,salto=10)
-def print_im(frame):
-    global imagenes
-    plt.figure()
-    plt.imshow(imagenes[frame])
-    plt.set_cmap('gray')
-    plt.colorbar()
-    plt.show()
-    
-#interact(print_im,frame=(0,10,1))
-plt.figure(figsize=(7,7))
-plt.imshow(imagenes[-1])
+n = 20
+imagenes,fibra = gf.crear_im_fibra2(n+1,fondo=0.05,salto=10,ruido=0.0015)
+#%%
+im = 0
+
+t_spl = np.linspace(0,1,10000)
+x,y = splev(t_spl,fibra[im])
+
+plt.figure()
+plt.imshow(imagenes[im])
+#plt.gca().invert_yaxis()
 plt.set_cmap('gray')
-plt.colorbar()
+plt.plot(y,x,'r-')
 plt.show()
 
 #%%
