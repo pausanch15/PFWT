@@ -20,6 +20,9 @@ def cortar_fibra(fibra): # la fibra con el thin ya hecho
     b1.reverse()
     b2.reverse()
     b = np.array([b1,b2]) #son los bordes en lista [[b1x,b1y],[b2x,b2y]]
+    print(b1,b2)
+    
+    
     
     nudos = np.array(np.where(convoled_fibra >= 4)) # encuentro los nudos con los puntos >= 4
     for i in range(len(nudos[0])):
@@ -27,6 +30,62 @@ def cortar_fibra(fibra): # la fibra con el thin ya hecho
         convoled_fibra[a[0],a[1]] = 0  #saco los nudos de la fibra para que quede partida
     
     bin_con_fibra = convoled_fibra > 0 #vuelvo a convertir la imagen en binaria
+    secciones, cantidad_secciones = label(bin_con_fibra, return_num=True) #saco las secciones
+    im_tramos = []
+    for i in range(1,cantidad_secciones+1):
+        secc = (secciones == i)
+        im_tramos.append(secc) #obtengo los tramos
+        
+    tramos = []
+    for im in im_tramos:
+        coor = np.where(im > 0)
+        y = coor[0]
+        x = coor[1]
+        tramo = []
+        for i in range(len(y)):
+            tramo.append([x[i],y[i]])
+        tramos.append(np.array(tramo))
+
+    return tramos,b
+
+def cortar_fibra2(fibra): # la fibra con el thin ya hecho
+    kernel = np.array([[1,1,1],
+                   [1,1,1],
+                   [1,1,1]])
+    cf = convolve2d(fibra,kernel) # hago la convolución
+    convolved_fibra = cf[1:-1,1:-1] * fibra # multiplico por la fibra para que quede 'thin'
+    
+    bordes = np.array(np.where(convolved_fibra == 2)) #saco los bordes como los puntos que sean 2
+#  para dectetar si el borde es ruido lo que hago es ver si es vecino de un nudo (eso me lo da hacer 
+# la convolucion de la convolucion). Si un borde real tambien esta cerca de un nudo lo pierdo 
+# (si pierdo los dos bordes por lo anterior puede dar problemas)
+    cf2 = convolve2d(convolved_fibra,kernel)
+    convolved2_fibra = cf2[1:-1,1:-1] * fibra
+    bordes = np.array(np.where(convolved2_fibra == 5))
+    no_bordes = np.array(np.where((convolved2_fibra == 6) | (convolved2_fibra == 7)))
+    for i in range(len(no_bordes[0])): 
+        a = list(no_bordes[:,i])
+        convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+    cf3 = convolve2d(convolved2_fibra,kernel)
+    convolved3_fibra = cf3[1:-1,1:-1] * fibra
+    bordes = np.array(np.where(convolved3_fibra == 13))
+    no_bordes = np.array(np.where(convolved3_fibra == 14))
+    for i in range(len(no_bordes[0])):
+        a = list(no_bordes[:,i])
+        convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+    b = []
+    for i in range(len(bordes[0,:])):
+        bor = list(bordes[:,i])
+        bor.reverse()
+        b.append(bor)
+    b = np.array(b) #son los bordes en lista [[b1x,b1y],[b2x,b2y]]
+    
+    nudos = np.array(np.where(convolved_fibra >= 4)) # encuentro los nudos con los puntos >= 4
+    for i in range(len(nudos[0])):
+        a = list(nudos[:,i])
+        convolved_fibra[a[0],a[1]] = 0  #saco los nudos de la fibra para que quede partida
+    
+    bin_con_fibra = convolved_fibra > 0 #vuelvo a convertir la imagen en binaria
     secciones, cantidad_secciones = label(bin_con_fibra, return_num=True) #saco las secciones
     im_tramos = []
     for i in range(1,cantidad_secciones+1):
@@ -117,12 +176,53 @@ def curvatura(fib,window=21,s=10):
     spline_1d = splev(t_spl,spl,der=1)
     spline_2d = splev(t_spl,spl,der=2)
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
-    return curv, np.mean(curv), np.std(curv), t_spl, spline
+    return curv, np.mean(curv), np.std(curv), spl # t_spl, spline
 
 def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
     if len(tramos) == 1:
-        cur,m_curv,_,t_spl,spline = curvatura(tramos[0],window=window,s=s)
-        return t_spl, cur, spline[0],spline[1]
+        cur,m_curv,_,spl = curvatura(tramos[0],window=window,s=s)
+        return cur, spl#t_spl, spline[0],spline[1]
+    
+    if len(bordes) == 1:
+        tra_medios = []
+        for i in range(len(tramos)):
+            if list(bordes[0]) in tramos[i].tolist():
+                pri_tramo = tramos[i]
+            else:
+                tra_medios.append(tramos[i])
+        if not list(bordes[0]) == list(pri_tramo[0]):
+            pri_tramo = np.flip(pri_tramo,axis=0)
+        
+        nudo = []
+        for i in range(len(tramos)):
+            if len(tramos[i]) < tamano_nudo:
+                nudo.append(i)
+        nudo.reverse()
+        for i in nudo:
+            del tramos[i]
+
+        pos_tra_med = []
+        for i in range(len(tra_medios)):
+            pos_tra_med.append( ( tra_medios[i],np.flip(tra_medios[i],axis=0) ))
+        n = len(pos_tra_med)
+        perm = list(permutations(range(n),n))
+        perm_inv = list(set(list(permutations([0,1]*n, n))))
+        min_curv = 10**3
+        for i in range(len(perm)):
+            for k in range(len(perm_inv)):
+                orden = []
+                for j,l in zip(perm[i],perm_inv[k]):
+                    orden.append(pos_tra_med[j][l])
+                orden.insert(0,pri_tramo)
+                fib = np.concatenate(tuple(orden))
+                cur,m_curv,_,spl = curvatura(fib,window=window,s=s)
+                if m_curv < min_curv:
+                    min_curv = m_curv
+                    curvatur = cur
+#                    t,xf,yf = t_spl,spline[0],spline[1]
+
+        return curvatur, spl #t,xf,yf
+
 
     tra_medios = []
     for i in range(len(tramos)):
@@ -162,13 +262,13 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
             orden.insert(0,pri_tramo)
             orden.append(ult_tramo)
             fib = np.concatenate(tuple(orden))
-            cur,m_curv,_,t_spl,spline = curvatura(fib,window=window,s=s)
+            cur,m_curv,_,spl = curvatura(fib,window=window,s=s)
             if m_curv < min_curv:
                 min_curv = m_curv
-                t, curvatur = t_spl, cur
-                xf,yf = spline[0],spline[1]
+                curvatur = cur
+#                t,xf,yf = t_spl,spline[0],spline[1]
 
-    return t, curvatur, xf,yf
+    return curvatur, spl #t,xf,yf
 
 
 def crear_fibra(n=4,bins=50):
