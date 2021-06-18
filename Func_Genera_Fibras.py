@@ -1,4 +1,4 @@
-#Acá están las funciones dedicadas a generar fibras dinámicas par testear el código.
+ #Acá están las funciones dedicadas a generar fibras dinámicas par testear el código.
 from math import * #Creo que no lo uso, lo usé par probar cosas
 import numpy as np
 import matplotlib.pyplot as plt
