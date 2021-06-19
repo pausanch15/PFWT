@@ -18,7 +18,7 @@ def encuentra_fibra(imagenes, binariza=97, connec=4):
         fibras.append(fibra)
     return fibras
 
-def cortar_fibra(fibra): # la fibra con el thin ya hecho
+def cortar_fibra(fibra, cortar_ruido=True): # la fibra con el thin ya hecho
     kernel = np.array([[1,1,1],
                    [1,1,1],
                    [1,1,1]])
@@ -29,20 +29,22 @@ def cortar_fibra(fibra): # la fibra con el thin ya hecho
 #  para dectetar si el borde es ruido lo que hago es ver si es vecino de un nudo (eso me lo da hacer 
 # la convolucion de la convolucion). Si un borde real tambien esta cerca de un nudo lo pierdo 
 # (si pierdo los dos bordes por lo anterior puede dar problemas)
-    cf2 = convolve2d(convolved_fibra,kernel)
-    convolved2_fibra = cf2[1:-1,1:-1] * fibra
-    bordes = np.array(np.where(convolved2_fibra == 5))
-    no_bordes = np.array(np.where((convolved2_fibra == 6) | (convolved2_fibra == 7)))
-    for i in range(len(no_bordes[0])): 
-        a = list(no_bordes[:,i])
-        convolved_fibra[a[0],a[1]] = 0 #saco este no borde
-    cf3 = convolve2d(convolved2_fibra,kernel)
-    convolved3_fibra = cf3[1:-1,1:-1] * fibra
-    bordes = np.array(np.where(convolved3_fibra == 13))
-    no_bordes = np.array(np.where(convolved3_fibra == 14))
-    for i in range(len(no_bordes[0])):
-        a = list(no_bordes[:,i])
-        convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+    
+    if cortar_ruido == True:
+        cf2 = convolve2d(convolved_fibra,kernel)
+        convolved2_fibra = cf2[1:-1,1:-1] * fibra
+        bordes = np.array(np.where(convolved2_fibra == 5))
+        no_bordes = np.array(np.where((convolved2_fibra == 6) | (convolved2_fibra == 7)))
+        for i in range(len(no_bordes[0])): 
+            a = list(no_bordes[:,i])
+            convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+        cf3 = convolve2d(convolved2_fibra,kernel)
+        convolved3_fibra = cf3[1:-1,1:-1] * fibra
+        bordes = np.array(np.where(convolved3_fibra == 13))
+        no_bordes = np.array(np.where(convolved3_fibra == 14))
+        for i in range(len(no_bordes[0])):
+            a = list(no_bordes[:,i])
+            convolved_fibra[a[0],a[1]] = 0 #saco este no borde
     b = []
     for i in range(len(bordes[0,:])):
         bor = list(bordes[:,i])
@@ -189,9 +191,10 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
                 if m_curv < min_curv:
                     min_curv = m_curv
                     curvatur = cur
+                    spli = spl
 #                    t,xf,yf = t_spl,spline[0],spline[1]
 
-        return curvatur, spl #t,xf,yf
+        return curvatur, spli #t,xf,yf
 
 
     tra_medios = []
@@ -210,7 +213,7 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
     
     nudo = []
     for i in range(len(tramos)):
-        if len(tramos[i]) < tamano_nudo:
+        if len(tramos[i]) < tamano_nudo and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
             nudo.append(i)
     nudo.reverse()
     for i in nudo:
@@ -236,7 +239,8 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
             if m_curv < min_curv:
                 min_curv = m_curv
                 curvatur = cur
+                spli = spl
 #                t,xf,yf = t_spl,spline[0],spline[1]
 
-    return curvatur, spl #t,xf,yf
+    return curvatur, spli #t,xf,yf
 
