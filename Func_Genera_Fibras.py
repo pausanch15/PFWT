@@ -14,9 +14,10 @@ def arma_fibra_dinamica(x, y, frames, salto, drift):
     xs,ys = np.array(x),np.array(y)
     N_puntos = len(x)
     fibra = []
-    dr = np.array(drift)
+#    dr = np.array(drift)
     for i in range(frames):
         #global x,y
+        dr = drift*np.random.random(2) - drift/2
         xs,ys = xs+(salto*np.random.random(N_puntos)-salto/2)+dr[0], ys+(salto*np.random.random(N_puntos)-salto/2)+dr[1]
         spl, u = splprep([xs, ys], s=0)
 #        t_spl = np.linspace(0, 1, 1000)
@@ -49,15 +50,15 @@ def fija_largo(fibra, n_puntos=1000):
     return nueva_fibra
 
 
-def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=[0,0],n_puntos_largo=1000):
+def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=0,largo_fibra=200,n_puntos_largo=1000):
 # empiezo en algun punto random (que no sea muy cera de los bordes) de mi imagen 1000x1000
     x,y = [],[]
-    x.append(np.random.rand()*890+50) 
-    y.append(np.random.rand()*890+50)
+    x.append(np.random.rand()*400+300) 
+    y.append(np.random.rand()*400+300)
     for i in range(n-1):
 # busco quedarme cerca del punto anterior
-        x.append(x[0]+np.random.random()*200-100)
-        y.append(y[0]+np.random.random()*200-100)
+        x.append(x[0]+np.random.random()*largo_fibra-largo_fibra/2)
+        y.append(y[0]+np.random.random()*largo_fibra-largo_fibra/2)
         
     fibra = fija_largo(arma_fibra_dinamica(x,y, frames,salto,drift),n_puntos_largo)
     
