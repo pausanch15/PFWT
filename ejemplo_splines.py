@@ -14,11 +14,11 @@ import imageio
 #%%
 #Veo con una fibra generada
 # Buenas: 12, 15
-np.random.seed(15)
+np.random.seed(12)
 n = 40
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[0,0])
+imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=20,largo_fibra=300)
 
-#imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_15.gif',imagenes,fps=12)
+imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_12.gif',imagenes,fps=12)
 #%%
 fibras = spl.encuentra_fibra(imagenes,binariza=105)
 #%%
