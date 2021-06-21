@@ -189,9 +189,10 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
                 if m_curv < min_curv:
                     min_curv = m_curv
                     curvatur = cur
+                    spli = spl
 #                    t,xf,yf = t_spl,spline[0],spline[1]
 
-        return curvatur, spl #t,xf,yf
+        return curvatur, spli #t,xf,yf
 
 
     tra_medios = []
@@ -236,7 +237,8 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
             if m_curv < min_curv:
                 min_curv = m_curv
                 curvatur = cur
+                spli = spl
 #                t,xf,yf = t_spl,spline[0],spline[1]
 
-    return curvatur, spl #t,xf,yf
+    return curvatur, spli #t,xf,yf
 
