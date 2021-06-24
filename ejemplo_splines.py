@@ -1,4 +1,4 @@
-#Ejemplo para la presentacion de como pasamos de la imagen original de la fibra a la fibra interpolada.
+#Ejemplo de como funciona el codigo en general
 import Func_Splines as spl
 import Func_Genera_Fibras as gf
 from PIL import Image
@@ -6,51 +6,58 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from skimage.measure import label, regionprops
-from skimage.morphology import thin, skeletonize, remove_small_objects
+from skimage.morphology import thin, skeletonize, remove_small_objects, dilation
 from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 import imageio
-#%%
-#Veo con una fibra generada
-# Buenas: 12, 15
-np.random.seed(12)
-n = 40
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=[0,0])
 
-#imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando.gif',imagenes,fps=12)
-#%%
-fibras = spl.encuentra_fibra(imagenes,binariza=113)
+#Generamos n fibras
+# Buenas: 12, 15
+np.random.seed(15)
+n = 5
+imagenes, fib = gf.crear_im_fibra(n+1, ruido=0.0015, fondo=0.05, salto=15, drift=[0,0])
+
+#Probamos con la primera de las fibras generadas
+fibras = spl.encuentra_fibra(imagenes, binariza=113)
 ff = 0
 fibra = fibras[ff]
 tramos,bordes = spl.cortar_fibra(fibra)
 tramos = spl.ordenar_fibra(tramos)
-curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=8)
+curv,spline = spl.pegar_fibra(tramos, bordes, window=17, s=8)
 
 t_spl = np.linspace(0,1,10000)
 xf,yf = splev(t_spl,spline)
 
+#Vemos la imagen de la fibra
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
-plt.show()
+plt.show(block=True)
+
+#Y la fibra que logramos obtener de la imagen
 plt.figure()
 plt.plot(xf,yf,'r-')
 plt.show()
 
 yo,xo = splev(t_spl,fib[ff])
 
-#plt.figure()
-#plt.hist(xf-xo,bins=100,color='blue',label='x')
-#plt.hist(yf-yo,bins=100,color='red',label='y')
-#plt.legend()
-#plt.show()
-#plt.figure()
-#plt.hist((xf-xo)+(yf-yo),bins=50)
-#plt.title('(xf-xo)+(yf-yo)')
-#plt.show()
-#%%
-fibras = spl.encuentra_fibra(imagenes,binariza=113)
+#Vemos la diferencia entre la fibra generada y la fibra obtenida a partir de la imagen
+#Primero x e y por separado
+plt.figure()
+plt.hist(xf-xo,bins=100,color='blue',label='x')
+plt.hist(yf-yo,bins=100,color='red',label='y')
+plt.legend()
+plt.show()
+
+#Ahora la suma
+plt.figure()
+plt.hist((xf-xo)+(yf-yo),bins=50)
+plt.title('(xf-xo)+(yf-yo)')
+plt.show()
+
+#Repetimos para las n imagenes
+fibras = spl.encuentra_fibra(imagenes, binariza=113)
 splines = []
 for ff in range(len(imagenes)):
     print(ff,end=' ')
@@ -58,8 +65,8 @@ for ff in range(len(imagenes)):
     tramos,bordes = spl.cortar_fibra(fibra)
     tramos = spl.ordenar_fibra(tramos)
     curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=8)
-    splines.append(spline) 
-#%%
+    splines.append(spline)
+
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fib)):
@@ -71,7 +78,7 @@ for i in range(len(fib)):
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
     dxdy = dxdy + list( (xf-xo)+(yf-yo) )
-    
+
 plt.figure()
 plt.hist(dx,bins=100,color='blue',label='x',alpha=0.5)
 plt.hist(dy,bins=100,color='red',label='y',alpha=0.5)
@@ -81,9 +88,8 @@ plt.figure()
 plt.hist(dxdy,bins=100)
 plt.title('(xf-xo)+(yf-yo)')
 plt.show()
-#%%
 
-##%%
+#No me queda claro que es esto, pero lo dejo.
 #lista_im = []
 #for frames in range(len(imagenes)):
 #    print(frames)

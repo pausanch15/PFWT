@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep
 from skimage.util import random_noise
 from skimage.filters import gaussian
+from skimage.morphology import thin, skeletonize, remove_small_objects, dilation
 #%%
 #versiones 2
 def arma_fibra_dinamica(x, y, frames, salto, drift):
