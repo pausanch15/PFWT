@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep
+from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
 from skimage.util import random_noise
 from skimage.filters import gaussian
 #%%
@@ -72,6 +73,8 @@ def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=0,la
     for frame in frames:
         im_fibra, xedges, yedges = np.histogram2d(*frame, 1000, [[0,1000],[0,1000]])
         im_fibra = im_fibra==0
+        im_fibra = dilation(1-im_fibra)
+        im_fibra = 1-im_fibra
         im_fibra = random_noise(im_fibra, mode='s&p', amount=ruido)
         ff = np.linspace(0,999,1000)
         fx,fy = np.meshgrid(ff,ff)
