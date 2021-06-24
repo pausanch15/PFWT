@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from skimage.measure import label, regionprops
-from skimage.morphology import thin, skeletonize, remove_small_objects
+from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
 from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
@@ -15,26 +15,27 @@ import imageio
 #Veo con una fibra generada
 # Buenas: 12, 15
 np.random.seed(12)
-n = 40
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=5,drift=20,largo_fibra=300)
+n = 20
+imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.000,fondo=0.00,salto=5,drift=0)
 
-imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_12.gif',imagenes,fps=12)
+#imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_12.gif',imagenes,fps=12)
 #%%
-fibras = spl.encuentra_fibra(imagenes,binariza=105)
+fibras = spl.encuentra_fibra(imagenes,binariza=110)
 #%%
-ff = 36
+ff = 19
 fibra = fibras[ff]
-tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
 tramos = spl.ordenar_fibra(tramos)
 curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
 
 t_spl = np.linspace(0,1,10000)
 xf,yf = splev(t_spl,spline)
 
-#plt.figure()
-#plt.set_cmap('gray')
-#plt.imshow(imagenes[ff])
-#plt.show()
+plt.figure()
+plt.set_cmap('gray')
+plt.imshow(imagenes[ff])
+#plt.imshow(dilation(255-imagenes[ff]))
+plt.show()
 #plt.figure()
 #plt.imshow(fibra)    
 #plt.plot(xf,yf,'r-')
@@ -47,19 +48,23 @@ xf,yf = splev(t_spl,spline)
 
 yo,xo = splev(t_spl,fib[ff])
 
-#plt.figure()
-#plt.plot(xo,yo,'g-') 
-#plt.plot(xf,yf,'r-')
-#plt.show()
 plt.figure()
-plt.plot(t_spl,xo,'r--')
-plt.plot(t_spl,xf,'r-')
+plt.plot(xo,yo,'g-') 
+#plt.plot(xf,yf,'r-')
+plt.show()
+#plt.figure()
+#plt.plot(t_spl,xo,'r--')
+#plt.plot(t_spl,xf,'r-')
 #plt.plot(t_spl,yf,'g-')
 #plt.plot(t_spl,yo,'g--')
-plt.grid(True)
-plt.show()
+#plt.grid(True)
+#plt.show()
+#plt.figure()
+#plt.plot(t_spl,xo-xf)
+#plt.plot(t_spl,yo-yf)
+#plt.show()
 
-np.max(np.abs(xf-xo))
+#np.max(np.abs(xf-xo))
 #plt.figure()
 #plt.hist(xf-xo,bins=100,color='blue',label='x')
 #plt.hist(yf-yo,bins=100,color='red',label='y')
@@ -85,7 +90,7 @@ t_spl = np.linspace(0,1,10000)
 for i in range(len(fib)):
     xf,yf = splev(t_spl,splines[i])
     yo,xo = splev(t_spl,fib[i])
-    if np.max(np.abs(xf-xo)) > 9:
+    if np.max(np.abs(xf-xo)) > 20:
         xo = xo[::-1]
         yo = yo[::-1]
     dx = dx + list(xf-xo)
