@@ -74,7 +74,7 @@ def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=0,la
         im_fibra, xedges, yedges = np.histogram2d(*frame, 1000, [[0,1000],[0,1000]])
         im_fibra = im_fibra==0
         im_fibra = dilation(1-im_fibra)
-        im_fibra = 1-im_fibra
+        im_fibra = np.array(1-im_fibra,dtype='float')
         im_fibra = random_noise(im_fibra, mode='s&p', amount=ruido)
         ff = np.linspace(0,999,1000)
         fx,fy = np.meshgrid(ff,ff)
