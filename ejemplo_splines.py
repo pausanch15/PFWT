@@ -16,25 +16,31 @@ import imageio
 # Buenas: 12, 15
 np.random.seed(12)
 n = 20
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.000,fondo=0.00,salto=5,drift=0)
+imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=50,drift=0)
 
 #imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_12.gif',imagenes,fps=12)
 #%%
 fibras = spl.encuentra_fibra(imagenes,binariza=110)
+# ver de usar el binariza como la media - 3 veces la desviación estandar
 #%%
 ff = 19
-fibra = fibras[ff]
-tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
-tramos = spl.ordenar_fibra(tramos)
-curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+#fibra = fibras[ff]
+#tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
+#tramos = spl.ordenar_fibra(tramos)
+#curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+#
+#t_spl = np.linspace(0,1,10000)
+#xf,yf = splev(t_spl,spline)
 
-t_spl = np.linspace(0,1,10000)
-xf,yf = splev(t_spl,spline)
+
 
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
 #plt.imshow(dilation(255-imagenes[ff]))
+plt.show()
+plt.figure()
+plt.hist(imagenes[ff].flatten(),bins=100)
 plt.show()
 #plt.figure()
 #plt.imshow(fibra)    
@@ -46,12 +52,12 @@ plt.show()
 #    x,y = tramos[tr][:,0],tramos[tr][:,1]
 #    plt.plot(x,y,'o')#,color='grey')
 
-yo,xo = splev(t_spl,fib[ff])
-
-plt.figure()
-plt.plot(xo,yo,'g-') 
+#yo,xo = splev(t_spl,fib[ff])
+##
+#plt.figure()
+#plt.plot(xo,yo,'g-') 
 #plt.plot(xf,yf,'r-')
-plt.show()
+#plt.show()
 #plt.figure()
 #plt.plot(t_spl,xo,'r--')
 #plt.plot(t_spl,xf,'r-')
@@ -98,12 +104,12 @@ for i in range(len(fib)):
     dxdy = dxdy + list( (xf-xo)+(yf-yo) )
     
 plt.figure()
-plt.hist(dx,bins=100,color='blue',label='x',alpha=0.5)
-plt.hist(dy,bins=100,color='red',label='y',alpha=0.5)
+plt.hist(dx,bins=50,color='blue',label='x',alpha=0.5)
+plt.hist(dy,bins=50,color='red',label='y',alpha=0.5)
 plt.legend()
 plt.show()
 plt.figure()
-plt.hist(dxdy,bins=100)
+plt.hist(dxdy,bins=50)
 plt.title('(xf-xo)+(yf-yo)')
 plt.show()
 
