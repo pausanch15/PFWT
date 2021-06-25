@@ -8,11 +8,12 @@ from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 
-def encuentra_fibra(imagenes, binariza=97, connec=4):
+def encuentra_fibra(imagenes, connec=4):
     fibras = []
     for im in imagenes:
         im = np.asarray(im)
-        im = im<binariza #Esto va a tener que ser un input de la funcion
+        binariza = np.mean(im.flatten())-3*np.std(im.flatten())
+        im = im<binariza 
         li = label(im)
         fibra = thin(remove_small_objects(im, connectivity=connec))
         fibras.append(fibra)
