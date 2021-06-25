@@ -51,7 +51,7 @@ def fija_largo(fibra, n_puntos=1000):
     return nueva_fibra
 
 
-def crear_im_fibra(frames,n=4,sigma=1,ruido=0.003,fondo=0.05,salto=20,drift=0,largo_fibra=200,n_puntos_largo=1000):
+def crear_im_fibra(frames, n=4, sigma=1, ruido=0.003, fondo=0.05, salto=20, drift=0, largo_fibra=200, n_puntos_largo=1000):
 # empiezo en algun punto random (que no sea muy cera de los bordes) de mi imagen 1000x1000
     x,y = [],[]
     x.append(np.random.rand()*400+300) 
