@@ -12,9 +12,9 @@ def encuentra_fibra(imagenes, connec=4):
     fibras = []
     for im in imagenes:
         im = np.asarray(im)
-        binariza = np.mean(im.flatten())-3*np.std(im.flatten())
+        binariza = np.mean(im.flatten())-3.5*np.std(im.flatten())
         im = im<binariza 
-        li = label(im)
+#        li = label(im)
         fibra = thin(remove_small_objects(im, connectivity=connec))
         fibras.append(fibra)
     return fibras
