@@ -11,41 +11,45 @@ from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 import imageio
+from time import time
 #%%
 #Veo con una fibra generada
 # Buenas: 12, 15
 np.random.seed(12)
-n = 20
-imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=50,drift=0)
+n = 30
+imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=10,drift=0)
 
 #imageio.mimsave('C:\\Users\\tomfe\\Documents\\TOMAS\\Facultad\\Laboratorio 6\\Github\\probando_12.gif',imagenes,fps=12)
 #%%
-fibras = spl.encuentra_fibra(imagenes,binariza=110)
+fibras = spl.encuentra_fibra(imagenes)
 # ver de usar el binariza como la media - 3 veces la desviación estandar
 #%%
-ff = 19
-#fibra = fibras[ff]
-#tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
-#tramos = spl.ordenar_fibra(tramos)
-#curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
-#
-#t_spl = np.linspace(0,1,10000)
-#xf,yf = splev(t_spl,spline)
+ff = 25
+fibra = fibras[ff]
+
+tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
+tramos = spl.ordenar_fibra(tramos)
+curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+
+t_spl = np.linspace(0,1,10000)
+xf,yf = splev(t_spl,spline)
 
 
 
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
-#plt.imshow(dilation(255-imagenes[ff]))
-plt.show()
-plt.figure()
-plt.hist(imagenes[ff].flatten(),bins=100)
 plt.show()
 #plt.figure()
-#plt.imshow(fibra)    
-#plt.plot(xf,yf,'r-')
+#plt.imshow(fibra)
 #plt.show()
+#plt.figure()
+#plt.hist(imagenes[ff].flatten(),bins=100)
+#plt.show()
+plt.figure()
+plt.imshow(fibra)    
+plt.plot(xf,yf,'r-')
+plt.show()
 
 #plt.gca().invert_yaxis()
 #for tr in range(len(tramos)):
@@ -81,15 +85,18 @@ plt.show()
 #plt.title('(xf-xo)+(yf-yo)')
 #plt.show()
 #%%
-fibras = spl.encuentra_fibra(imagenes,binariza=105)
+t1 = time()
+fibras = spl.encuentra_fibra(imagenes)
 splines = []
 for ff in range(len(imagenes)):
     print(ff,end=' ')
     fibra = fibras[ff]
-    tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+    tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
     tramos = spl.ordenar_fibra(tramos)
     curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
     splines.append(spline) 
+t2 = time()
+t2-t1
 #%%
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
