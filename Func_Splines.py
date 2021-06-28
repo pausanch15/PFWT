@@ -8,11 +8,11 @@ from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 
-def encuentra_fibra(imagenes, connec=4):
+def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras = []
     for im in imagenes:
         im = np.asarray(im)
-        binariza = np.mean(im.flatten())-3.5*np.std(im.flatten())
+#        binariza = np.mean(im.flatten())-5*np.std(im.flatten())
         im = im<binariza 
 #        li = label(im)
         fibra = thin(remove_small_objects(im, connectivity=connec))
@@ -95,6 +95,30 @@ def buscar_bordes(x,y): #busca los bordes y nodos de la fibra
             ind.append(i)
     return xb,yb,ind
 
+def buscar_bordes_rap(tramo):
+    if len(tramo) > 2: 
+        x,y = tramo[:,0], tramo[:,1]
+        bx = np.linspace(np.min(x)-1,np.max(x)+1,np.max(x)-np.min(x)+3)
+        by = np.linspace(np.min(y)-1,np.max(y)+1,np.max(y)-np.min(y)+3)
+        ff, xedges, yedges = np.histogram2d(x,y,[bx,by])
+        kernel = np.array([[1,1,1],
+                           [1,1,1],
+                           [1,1,1]])
+        cf = convolve2d(ff,kernel) # hago la convolución
+        convolved_fibra = cf[1:-1,1:-1] * ff # multiplico por la fibra para que quede 'thin'
+            
+        bordes = np.array(np.where(convolved_fibra == 2))
+        bordes[0] = bordes[0]+np.min(x)-1
+        bordes[1] = bordes[1]+np.min(y)-1
+              
+        ind = []
+        for i in range(len(bordes[0])):
+            ii = np.where((tramo[:,0] == bordes[0][i]) & (tramo[:,1] == bordes[1][i]))
+            ind.append(int(ii[0]))
+        return list(bordes[0]), list(bordes[1]), ind
+    else: 
+        return [tramo[:,0][0]], [tramo[:,1][0]], [0] 
+
 def primer_paso(xt,yt,xd,yd): #hago el primer paso
     for i in range(len(xd)):
         if (np.abs(xt[-1]-xd[i]))**2 + (np.abs(yt[-1]-yd[i]))**2 <= 2:
@@ -117,7 +141,8 @@ def a_borde(xt,yt,xd,yd,xb,yb): #avanzo por la fibra hasta llegar a un nodo o un
                 
 def ordenar_tramo(tramo):
     x,y = tramo[:,0], tramo[:,1]
-    xb,yb,ind = buscar_bordes(x,y)
+#    xb,yb,ind = buscar_bordes(x,y)
+    xb,yb,ind = buscar_bordes_rap(tramo)
     xd, yd = list(x),list(y)
     xt, yt = [xb[0]],[yb[0]]
     del xd[ind[0]]
@@ -133,8 +158,9 @@ def ordenar_fibra(tramos):
     fibra = []
     for i in range(len(tramos)):
         tramo = tramos[i]
-        tr_ord = ordenar_tramo(tramo)
-        fibra.append(tr_ord)
+        if len(tramo) > 2:
+            tramo = ordenar_tramo(tramo)
+        fibra.append(tramo)
     return fibra
 
 
@@ -196,7 +222,6 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
 #                    t,xf,yf = t_spl,spline[0],spline[1]
 
         return curvatur, spli #t,xf,yf
-
 
     tra_medios = []
     for i in range(len(tramos)):
