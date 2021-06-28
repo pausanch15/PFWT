@@ -18,25 +18,27 @@ n = 30
 imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=10,drift=0)
 #%%
 t1 = time()
-fibras = spl.encuentra_fibra(imagenes)
+fibras = spl.encuentra_fibra(imagenes,binariza=90)
 t2 = time()
 t2-t1
 #%%
-ff = 26
+ff = 9
 fibra = fibras[ff]
 t1 = time()
 tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
 t2 = time()
+print(t2-t1)
+print(len(tramos),bordes)
 tramos = spl.ordenar_fibra(tramos)
 t3 = time()
+print(t3-t2)
 curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
 t4 = time()
-print(t2-t1,t3-t2,t4-t3)
+print(t4-t3)
 
 t_spl = np.linspace(0,1,10000)
 xf,yf = splev(t_spl,spline)
 
-print(len(tramos))
 
 plt.figure()
 plt.set_cmap('gray')
@@ -49,8 +51,8 @@ plt.plot(xf,yf,'r-')
 plt.show()
 #%%
 #cProfile.run('spl.cortar_fibra(fibra,cortar_ruido=True)',sort='tottime')
-#cProfile.run('spl.ordenar_fibra(tramos)',sort='tottime')
-cProfile.run('spl.pegar_fibra(tramos,bordes,window=21,s=10)',sort='tottime')
+cProfile.run('spl.ordenar_fibra(tramos)',sort='tottime')
+#cProfile.run('spl.pegar_fibra(tramos,bordes,window=21,s=10)',sort='tottime')
 #%%
 #De encuentra_fibra lo que mas tiempo parece llevar es 
 #built-in method scipy.ndimage._nd_image.correlate
@@ -73,8 +75,31 @@ cProfile.run('spl.pegar_fibra(tramos,bordes,window=21,s=10)',sort='tottime')
 def main():
     ff = 26
     fibra = fibras[ff]
-    tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=True)
+    tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
     tramos = spl.ordenar_fibra(tramos)
     curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
 
 cProfile.run('main()',sort='tottime')
+#%%
+fibras = spl.encuentra_fibra(imagenes,binariza=90)
+splines = []
+for ff in range(len(imagenes)):
+    print(ff,end=' ')
+    fibra = fibras[ff]
+    tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+    tramos = spl.ordenar_fibra(tramos)
+    curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+    splines.append(spline)
+#%%
+def main2():
+    fibras = spl.encuentra_fibra(imagenes,binariza=90)
+    splines = []
+    for ff in range(len(imagenes)):
+#        print(ff,end=' ')
+        fibra = fibras[ff]
+        tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+        tramos = spl.ordenar_fibra(tramos)
+        curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+        splines.append(spline)
+
+cProfile.run('main2()',sort='tottime')
