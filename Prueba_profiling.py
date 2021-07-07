@@ -12,6 +12,8 @@ from itertools import permutations
 import imageio
 import cProfile
 from time import time
+from sklearn.neighbors import NearestNeighbors
+import networkx as nx
 #%%
 np.random.seed(12)
 n = 30
@@ -22,7 +24,7 @@ fibras = spl.encuentra_fibra(imagenes,binariza=90)
 t2 = time()
 t2-t1
 #%%
-ff = 9
+ff = 25
 fibra = fibras[ff]
 t1 = time()
 tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
@@ -103,3 +105,5 @@ def main2():
         splines.append(spline)
 
 cProfile.run('main2()',sort='tottime')
+
+#%%
