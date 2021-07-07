@@ -7,6 +7,8 @@ from skimage.morphology import thin, skeletonize, remove_small_objects
 from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
+from sklearn.neighbors import NearestNeighbors
+import networkx as nx
 
 def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras = []
@@ -89,6 +91,7 @@ def buscar_bordes(x,y): #busca los bordes y nodos de la fibra
                 continue
             if (np.abs(xi-xj))**2 + (np.abs(yi-yj))**2 <= 2:
                 vec += 1
+        print(vec)
         if vec < 2:
             xb.append(xi)
             yb.append(yi)
@@ -154,12 +157,26 @@ def ordenar_tramo(tramo):
         tramo_ord.append([xt[i],yt[i]])
     return np.array(tramo_ord)
 
+def ordenar_tramo_rap(tramo):
+    br1,br2,ii = buscar_bordes_rap(tramo)
+    pp = (list(tramo[ii[0]]), list(tramo[0]))
+    tramo[0], tramo[ii[0]] = pp
+    clf = NearestNeighbors(n_neighbors=2).fit(tramo)
+    G = clf.kneighbors_graph()
+    T = nx.from_scipy_sparse_matrix(G)
+    
+    order = list(nx.dfs_preorder_nodes(T, 0))
+    
+    tra_ord = tramo[order]
+    return(tra_ord)
+
 def ordenar_fibra(tramos):
     fibra = []
     for i in range(len(tramos)):
         tramo = tramos[i]
         if len(tramo) > 2:
-            tramo = ordenar_tramo(tramo)
+#            tramo = ordenar_tramo(tramo)
+            tramo = ordenar_tramo_rap(tramo)
         fibra.append(tramo)
     return fibra
 
