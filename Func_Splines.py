@@ -10,6 +10,7 @@ from itertools import permutations
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
+@profile
 def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras = []
     for im in imagenes:
@@ -17,7 +18,14 @@ def encuentra_fibra(imagenes, connec=4, binariza=110):
 #        binariza = np.mean(im.flatten())-5*np.std(im.flatten())
         im = im<binariza 
 #        li = label(im)
-        fibra = thin(remove_small_objects(im, connectivity=connec))
+        fibra = remove_small_objects(im, connectivity=connec)
+        # li = label(fibra)
+        prop = regionprops(fibra.astype(int))
+        bb = prop[0].bbox
+        recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
+        fibra_t = thin(recorte)
+        # fibra2 = thin(fibra[1:500, 1:500])
+        fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
         fibras.append(fibra)
     return fibras
 
