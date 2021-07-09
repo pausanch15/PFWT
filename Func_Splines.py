@@ -10,11 +10,7 @@ from itertools import permutations
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
-<<<<<<< HEAD
-#@profile
-=======
 # @profile
->>>>>>> 75a76d1c4d9403f2a6df24162ddc43450ff3e913
 def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras, bbs = [], []
     for im in imagenes:
@@ -264,7 +260,7 @@ def curvatura(fib,window=21,s=10):
     ysg = savgol_filter(y,window,porder)
     spl, u = splprep([xsg,ysg],s=s)
     t_spl = np.linspace(0,1,100000)
-    spline = splev(t_spl,spl)
+#    spline = splev(t_spl,spl)
     spline_1d = splev(t_spl,spl,der=1)
     spline_2d = splev(t_spl,spl,der=2)
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
