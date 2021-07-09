@@ -10,7 +10,6 @@ from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 import imageio
-import cProfile
 from time import time
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
@@ -19,38 +18,37 @@ np.random.seed(12)
 n = 30
 imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=10,drift=0)
 #%%
-# t1 = time()
-# fibras = spl.encuentra_fibra(imagenes,binariza=90)
-# t2 = time()
-# t2-t1
-# #%%
-# ff = 25
-# fibra = fibras[ff]
-# t1 = time()
-# tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
-# t2 = time()
-# print(t2-t1)
-# print(len(tramos),bordes)
-# tramos = spl.ordenar_fibra(tramos)
-# t3 = time()
-# print(t3-t2)
-# curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
-# t4 = time()
-# print(t4-t3)
-# 
-# t_spl = np.linspace(0,1,10000)
-# xf,yf = splev(t_spl,spline)
+t1 = time()
+fibras, bbs = spl.encuentra_fibra(imagenes,binariza=90)
+t2 = time()
+t2-t1
+#%%
+ff = 24
+fibra, bb = fibras[ff], bbs[ff]
+t1 = time()
+#tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+t2 = time()
+print(t2-t1)
+tramos = spl.ordenar_fibra(tramos)
+t3 = time()
+print(t3-t2)
+curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+t4 = time()
+print(t4-t3)
 
+t_spl = np.linspace(0,1,10000)
+xf,yf = splev(t_spl,spline)
 
-# plt.figure()
-# plt.set_cmap('gray')
-# plt.imshow(imagenes[ff])
-# #plt.imshow(fibra)
-# plt.show()
-# plt.figure()
-# plt.imshow(fibra)
-# plt.plot(xf,yf,'r-')
-# plt.show()
+#plt.figure()
+#plt.set_cmap('gray')
+##plt.imshow(imagenes[ff])
+#plt.imshow(fibra)
+#plt.show()
+plt.figure()
+plt.imshow(imagenes[ff])
+plt.plot(xf,yf,'r-')
+plt.show()
 #%%
 #cProfile.run('spl.cortar_fibra(fibra,cortar_ruido=True)',sort='tottime')
 # cProfile.run('spl.ordenar_fibra(tramos)',sort='tottime')
@@ -93,20 +91,69 @@ imagenes, fib = gf.crear_im_fibra(n+1,ruido=0.0015,fondo=0.05,salto=10,drift=0)
     # curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
     # splines.append(spline)
 #%%
-# @profile
+#@profile
 def main2():
-    fibras = spl.encuentra_fibra(imagenes,binariza=90)
+    t = time()
+    fibras, bbs = spl.encuentra_fibra(imagenes,binariza=90)
+    tt = time()
+    print(tt-t)
     splines = []
     # for ff in range(len(imagenes)):
-    for ff in range(1):
+    for ff in range(len(imagenes)):
 #        print(ff,end=' ')
-        fibra = fibras[ff]
-        tramos,bordes = spl.cortar_fibra(fibra,cortar_ruido=False)
+        fibra, bb = fibras[ff], bbs[ff]
+        tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
         tramos = spl.ordenar_fibra(tramos)
         curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
         splines.append(spline)
+    ttt=time()
+    print(ttt-tt)
 
-# cProfile.run('main2()',sort='tottime')
-# main2()
-fibra = spl.encuentra_fibra(imagenes)
+t1 = time()
+main2()
+t2 = time()
+t2-t1
 #%%
+
+im = np.asarray(imagenes[24])
+imb = im<90 
+fibra = remove_small_objects(imb, connectivity=4)
+prop = regionprops(fibra.astype(int))
+bb = prop[0].bbox
+recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
+fibra_t = thin(recorte)
+fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
+
+kernel = np.array([[1,1,1],
+               [1,1,1],
+               [1,1,1]])
+cf = convolve2d(fibra_t,kernel) # hago la convolución
+convolved_fibra = cf[1:-1,1:-1] * fibra_t # multiplico por la fibra para que quede 'thin'
+bordes = np.array(np.where(convolved_fibra == 2))
+bordes[0],bordes[1] = bordes[0]+bb[0], bordes[1]+bb[1]
+fib = np.where(convolved_fibra>0)
+fib = np.array(fib)
+fib[0], fib[1] = fib[0]+bb[0], fib[1]+bb[1]
+#bb, bordes
+print(fib)
+
+ 
+plt.figure()
+#plt.imshow(im)
+plt.imshow(fibra)
+#plt.imshow(convolved_fibra)
+plt.show()
+
+#%%
+a = np.zeros((1000,1000))
+b = np.zeros((180,180))
+
+nn = 10**3
+t1 = time()
+for i in range(nn):
+    a>0
+t2 = time()
+for i in range(nn):
+    b>0
+t3 = time()
+t2-t1,t3-t2, (t2-t1)/(t3-t2)
