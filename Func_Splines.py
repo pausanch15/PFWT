@@ -10,7 +10,11 @@ from itertools import permutations
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
+<<<<<<< HEAD
 #@profile
+=======
+# @profile
+>>>>>>> 75a76d1c4d9403f2a6df24162ddc43450ff3e913
 def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras, bbs = [], []
     for im in imagenes:
