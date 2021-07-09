@@ -10,9 +10,9 @@ from itertools import permutations
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
-@profile
+#@profile
 def encuentra_fibra(imagenes, connec=4, binariza=110):
-    fibras = []
+    fibras, bbs = [], []
     for im in imagenes:
         im = np.asarray(im)
 #        binariza = np.mean(im.flatten())-5*np.std(im.flatten())
@@ -22,12 +22,14 @@ def encuentra_fibra(imagenes, connec=4, binariza=110):
         # li = label(fibra)
         prop = regionprops(fibra.astype(int))
         bb = prop[0].bbox
+        bbs.append(bb)
         recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
         fibra_t = thin(recorte)
         # fibra2 = thin(fibra[1:500, 1:500])
         fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
-        fibras.append(fibra)
-    return fibras
+#        fibras.append(fibra)
+        fibras.append(fibra_t)
+    return fibras, bbs
 
 def cortar_fibra(fibra, cortar_ruido=True): # la fibra con el thin ya hecho
     kernel = np.array([[1,1,1],
@@ -78,6 +80,68 @@ def cortar_fibra(fibra, cortar_ruido=True): # la fibra con el thin ya hecho
     tramos = []
     for im in im_tramos:
         coor = np.where(im > 0)
+        y = coor[0]
+        x = coor[1]
+        tramo = []
+        for i in range(len(y)):
+            tramo.append([x[i],y[i]])
+        tramos.append(np.array(tramo))
+
+    return tramos,b
+
+def cortar_fibra_rap(fibra_t, bb, cortar_ruido=True): # la fibra con el thin ya hecho
+    kernel = np.array([[1,1,1],
+                   [1,1,1],
+                   [1,1,1]])
+    cf = convolve2d(fibra_t,kernel) # hago la convolución
+    convolved_fibra = cf[1:-1,1:-1] * fibra_t # multiplico por la fibra para que quede 'thin'
+    
+    bordes = np.array(np.where(convolved_fibra == 2)) #saco los bordes como los puntos que sean 2
+#  para dectetar si el borde es ruido lo que hago es ver si es vecino de un nudo (eso me lo da hacer 
+# la convolucion de la convolucion). Si un borde real tambien esta cerca de un nudo lo pierdo 
+# (si pierdo los dos bordes por lo anterior puede dar problemas)
+    
+    if cortar_ruido == True:
+        cf2 = convolve2d(convolved_fibra,kernel)
+        convolved2_fibra = cf2[1:-1,1:-1] * fibra_t
+        bordes = np.array(np.where(convolved2_fibra == 5))
+        no_bordes = np.array(np.where((convolved2_fibra == 6) | (convolved2_fibra == 7)))
+        for i in range(len(no_bordes[0])): 
+            a = list(no_bordes[:,i])
+            convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+        cf3 = convolve2d(convolved2_fibra,kernel)
+        convolved3_fibra = cf3[1:-1,1:-1] * fibra_t
+        bordes = np.array(np.where(convolved3_fibra == 13))
+        no_bordes = np.array(np.where(convolved3_fibra == 14))
+        for i in range(len(no_bordes[0])):
+            a = list(no_bordes[:,i])
+            convolved_fibra[a[0],a[1]] = 0 #saco este no borde
+            
+    bordes[0],bordes[1] = bordes[0]+bb[0], bordes[1]+bb[1]
+    b = []
+    for i in range(len(bordes[0,:])):
+        bor = list(bordes[:,i])
+        bor.reverse()
+        b.append(bor)
+    b = np.array(b) #son los bordes en lista [[b1x,b1y],[b2x,b2y]]
+    
+    nudos = np.array(np.where(convolved_fibra >= 4)) # encuentro los nudos con los puntos >= 4
+    for i in range(len(nudos[0])):
+        a = list(nudos[:,i])
+        convolved_fibra[a[0],a[1]] = 0  #saco los nudos de la fibra para que quede partida
+    
+    bin_con_fibra = convolved_fibra > 0 #vuelvo a convertir la imagen en binaria
+    secciones, cantidad_secciones = label(bin_con_fibra, return_num=True) #saco las secciones
+    im_tramos = []
+    for i in range(1,cantidad_secciones+1):
+        secc = (secciones == i)
+        im_tramos.append(secc) #obtengo los tramos
+        
+    tramos = []
+    for im in im_tramos:
+        coor = np.where(im > 0)
+        coor = np.array(coor)
+        coor[0], coor[1] = coor[0]+bb[0], coor[1]+bb[1]
         y = coor[0]
         x = coor[1]
         tramo = []
