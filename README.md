@@ -54,5 +54,26 @@ Las preguntas que nos surgieron al trabajar de esta forma son:
 * ¿Sería buena idea hacer un fitting con los splines, en vez de interpolar con los splines?
 * ¿Podríamos fijar un día a la semana para hablar?
 
+Hablamos con Pablo, pudimos responder las preguntas anteriores.
 
+* ¿Sacar puntos de la fibra es válido? Si, no es un problema. No necesitamos interpolar rigurosamente, sino que queremos realizar un ajuste por splines, y sacar puntos es incluso parte del proceso.
+* ¿Está bien pasar dos veces por el mismo tramo? Sí. Al ser todo ficticio lo que trabajamos con la fibra (distinto a lo que hace la fibra realmente) no es importante esto. Seguro estamos haciendo cosas similares en otros tramos sin saberlo. Además está bien por lo que explicó en la respuesta anterior.
+* ¿Vale la pena buscar una forma de fusionar ambas formas? ¿O mejor usamos una sola u otra totalmente distinta? Sí vale la pena. Para hablar más de esto, leer más abajo las propuestas para el trabajo que sigue.
+* ¿Cómo afecta que la curva que nos queda es escalonada? Esto hay que suavizarlo. Es por esto que no vamos a trabajar con una interpolación propiamente dicha sino con un fitting.
+* ¿Sería buena idea hacer un fitting con los splines, en vez de interpolar con los splines? Sí! De hecho, es lo que deberíamos haber hecho desde un inicio, solo que como el fitting que deberíamos usar también se llama splines cúbicos lo entendimos mal. Más abajo describimos más los tipos de ajuste con los que podremos trabajar.
+* ¿Podríamos fijar un día a la semana para hablar? Sí! Quedamos para el 4/5/21.
+
+A la hora de trabajar con la imagen de la fibra, importa en que orden la recorremos ya que la energía depende del radio de curvatura y esto depende de cómo tomemos la fibra.
+
+Fijamos un plan de trabajo a seguir. Lo que deberíamos lograr hacer para la semana que viene es lo siguiente:
+
+* Detectar extremos y nudos.
+* Partir la fibra (de la forma más genérica posible, con la idea en mente de que esto sirva para cualquier otra fibra del estilo de las que nos vamos a encontrar).
+* Ordenar los puntos en cada tramo.
+* Interpolar (en el sentido físico).
+* Unir los pedazos en los que dividimos la fibra y sus respectivas interpolaciones.
+
+En general buscaremos que el código use la menor cantidad de iterables posible, ya sean listas o arrays que tengamos que recorrer. Queremos evitar esto ya que es costoso y existen herramientas muy desarrolladas para evitar tener que hacerlo.
+
+En cuanto a cómo partir la fibra, todo se reduce a poder encontrar los nudos (knots). Para esto pensamos en la imagen de la fibra que tenemos como una matriz donde cada lugar de la misma representa la intensidad de un píxel. Por otro lado, tomamos una matriz de dimensiones mucho más chicas que de la matriz de la imagen. A esta matriz la llamaremos _stencil_ o _kernel_, y con ella iremos recorriendo la imagen, colocando el stencil en alguna posición inicial y recorriendo de esta forma cada una de las posiciones, realizando a cada paso la convolución entre las matrices superpuestas (stencil convolucionado con la sección de la matriz de la imagen que corresponda). Por cada convolución obtendremos un valor, y en total tendremos tantos valores como píxeles en la imagen original. A la matriz de los productos de las convoluciones la llamaremos _imagen convolucionada_, y es la que usaremos para detectar los knots (y los end points). Los píxeles más claros de la imagen convolucionada corresponderán a los extremos (end points) de la fibra, mientras que los más opscuros serán los knots. Una función que hace esto en python es _miss\and\match_.
 
