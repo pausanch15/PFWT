@@ -93,7 +93,7 @@ def genera_im_fibra(fibra, bins=500, sigma=1, ruido=0.003, fondo=0.05):
     
     im_fib, x_ed, y_ed = np.histogram2d(*fr, bins) #Imagen con la fibra
     
-    im_fibra = np.zeros((700, 700)) #Imagen más grande para poner la fibra
+    im_fibra = np.zeros((1000, 1000)) #Imagen más grande para poner la fibra
     im_fibra[100:600, 100:600] = im_fib #Agrego la fibra
     
     im_fibra = im_fibra==0
@@ -108,4 +108,54 @@ def genera_im_fibra(fibra, bins=500, sigma=1, ruido=0.003, fondo=0.05):
     
     return im_fibra
 
-
+def genera_im_dinamica(frames=10, n_fibras=2, bins=200, sigma=1, ruido=0.003, fondo=0.05, drift=0):
+    """
+    Genera las imagenes de la dinamica de fibras. Esta función ya genera las fibras.
+    n_fibras = la cantidad de fibras que se usa para hacer la dinamica, tiene que ser mayor o igual a 2
+    frames = cantidad de frames entre fibras (el Nsteps de generar_dinamica)
+    """
+    fibras = []
+    for i in range(n_fibras):
+        fib = generar_fibra(N=100, L=1, alpha=0.1, Nt=8)
+        fibras.append(fib)
+    
+    dinam = generar_dinamica(fibras,frames)
+    
+    
+    imagenes = []
+    splines = []
+    origen = np.random.random(2) * (1000-bins-100-50) + 150
+    ox, oy = int(origen[0]), int(origen[1])
+#    print(ox,oy)
+    for i in range( (n_fibras-1)*frames ):
+        x_f, y_f = np.real(dinam[:,i]), np.imag(dinam[:,i])
+        spl, u = splprep([x_f, y_f], s=0)
+        t_spl = np.linspace(0, 1, len(x_f)*10)
+        fr = splev(t_spl, spl)
+        splines.append(spl)
+        
+        im_fib, x_ed, y_ed = np.histogram2d(*fr, bins)
+    
+        dr = drift*np.random.random(2) - drift/2
+        ox += int(dr[0])
+        oy += int(dr[1])
+#        print(dr,' ',ox,ox+bins,' ',oy,oy+bins)
+        
+        im_fibra = np.zeros((1000, 1000)) #Imagen más grande para poner la fibra
+        im_fibra[ox:(ox+bins), oy:(oy+bins)] = im_fib
+    
+        im_fibra = im_fibra==0
+        im_fibra = dilation(1-im_fibra)
+        im_fibra = np.array(1-im_fibra,dtype='float')
+        im_fibra = random_noise(im_fibra, mode='s&p', amount=ruido)
+        ff = np.linspace(0,999,1000)
+        fx,fy = np.meshgrid(ff,ff)
+        im_fibra = (im_fibra + fx*fy / 1000**2 * fondo) / 2
+        im_fibra = gaussian(im_fibra, sigma=sigma)
+        im_fibra = np.array(255*im_fibra, dtype='uint8')
+        imagenes.append(im_fibra)
+        
+    return imagenes, splines
+        
+        
+        
