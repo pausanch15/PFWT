@@ -27,11 +27,10 @@ Una vez tenemos lo anterior binarizamos la imagen con algún threshold (se puede
 **ROI**: Region of Interest.
 
 Algunos comandos útiles que seguramente usemos:
-
-    _whos_: da información de lo que tenemos definido en el código hasta el momento.
-    _plt.imshow_: muetra la imagen.
-    _plt.colorbar_: agrega barra de intensidad de colores.
-    _plt.set\_camp(gray)_: muestra la imagen en blanco y negro.
+*_whos_: da información de lo que tenemos definido en el código hasta el momento.
+*_plt.imshow_: muetra la imagen.
+*_plt.colorbar_: agrega barra de intensidad de colores.
+*_plt.set\_camp(gray)_: muestra la imagen en blanco y negro.
 
 
 
