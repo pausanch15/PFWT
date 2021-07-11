@@ -145,15 +145,4 @@ plt.imshow(fibra)
 plt.show()
 
 #%%
-a = np.zeros((1000,1000))
-b = np.zeros((180,180))
 
-nn = 10**3
-t1 = time()
-for i in range(nn):
-    a>0
-t2 = time()
-for i in range(nn):
-    b>0
-t3 = time()
-t2-t1,t3-t2, (t2-t1)/(t3-t2)
