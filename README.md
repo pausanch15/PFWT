@@ -77,3 +77,28 @@ En general buscaremos que el código use la menor cantidad de iterables posible,
 
 En cuanto a cómo partir la fibra, todo se reduce a poder encontrar los nudos (knots). Para esto pensamos en la imagen de la fibra que tenemos como una matriz donde cada lugar de la misma representa la intensidad de un píxel. Por otro lado, tomamos una matriz de dimensiones mucho más chicas que de la matriz de la imagen. A esta matriz la llamaremos _stencil_ o _kernel_, y con ella iremos recorriendo la imagen, colocando el stencil en alguna posición inicial y recorriendo de esta forma cada una de las posiciones, realizando a cada paso la convolución entre las matrices superpuestas (stencil convolucionado con la sección de la matriz de la imagen que corresponda). Por cada convolución obtendremos un valor, y en total tendremos tantos valores como píxeles en la imagen original. A la matriz de los productos de las convoluciones la llamaremos _imagen convolucionada_, y es la que usaremos para detectar los knots (y los end points). Los píxeles más claros de la imagen convolucionada corresponderán a los extremos (end points) de la fibra, mientras que los más opscuros serán los knots. Una función que hace esto en python es _miss\and\match_.
 
+Esta es una forma mucho más óptima de obtener los knots y los endpoints que recorrer todos los puntos de la fibra ya que se trata de productos entre matrices chicas, operación que está muy optimizada en python. Paquetes que realizan esto de manera adecuada son _Lapack_ y _Blas_ entre otros.
+
+A la hora de ordenar los puntos será conveniente pensar a la fibra como un grafo, y de esta manera contar con las nociones de _vecinos_ o _neighbours_ y _nodos_. Además, de esta forma nos podremos valer de rutinas _KNN_ (Kth neighbours), funciones ya desarrolladas y optimizadas para encontrar los caminos más cortos posibles para recorrer grafos pasando solamente una vez por cada nodo. De esta forma es que podremos ordenar los puntos de la fibra sin pasar por listas ni arrays.
+
+En cuanto a la interpolación, no nos referimos a ella en el sentido más matemático, sino que lo que buscamos es un fitting a los puntos de la fibra mediante splines cúbicos. No tendrá sentido trabajar con cuadrados mínimos ya que muchas de las secciones de fibra que con encontremos no corresponderán a funciones (darán vueltas, serán rulos. etc).
+
+Hay tres métodos que posiblemente usemos, y cada uno cuenta con un parámetro que tendremos que determinar de manera arbitraria, y representará el criterio con el que trabajemos.
+
+* _Splines Cúbicos_: Depende del _subsampling_, es decir cuantos puntos tomar para hacer el fitting/interpolación. Entendí algo sobre tomar algún parámetro para usar como guía de que si saco más puntos la curva cambia demasiado.
+* _Filtros Savitzky-Golay_: Dependen del tamaño de la ventana. Lo que hace es ir tomando promedios por ventana y asignarle ese valor a algún lugar y luego mover la ventana es como una media móvil.
+* _Filtros en Fourier_: Dependen del _cut off_, de la frecuencia de corte. Básicamente es un pasabajos, dejamos pasar todas las frecuencias menores a el _cut off_.
+
+Para unir las secciones en las que separamos la fibra, lo que nos convendrá hacer es extrapolar las aproximaciones por splines que hicimos, y de esta forma ir probando cómo serían todas las posibles combinaciones entre secciones, y compararlas para ver cuál genera menos nuevas curvaturas. Esto lo haremos tomando la extrapolación de cada spline con el que contemos, midiendo su curvatura en función de algún parámetro (en este caso la posición de cada punto). Para cada una de estas curvaturas tomaremos su media y desvío estándar. Luego, pegaremos cada par posible de extremos y observaremos los eventos que se den en cada caso. Cuando estos sean mucho mayores al desvío estándar observado en cada caso, sabremos que esa no es la forma de pegar las secciones.
+
+Para unir la fibra Pablo sugirió la opción de ir uniendo forzosamente los tramos y ver que da menos curvatura. Más específicamente queremos hacer un gráfico de la curvatura en función del parámetro de la fibra y buscar que en los puntos donde se unan los tramos no tener picos muy altos (que se dispare el valor de la curvatura).
+
+## Cómo guardar los Datos
+Estamos viendo la mejor manera de almacenar los datos que vayamos obteniendo al analizar las imágenes que provengan de las mediciones. Esperamos tener bastantes datos, separados en diversas categorías. La idea sería usar _hdf5_, con la librería **h5py** ([title](https://docs.h5py.org/en/stable/})) para poder trabajar desde python.
+
+## Análisis de Imágenes: Buscando la Fibra
+Estos meses estuvimos trabajando en los códigos para automatizar lo más posible el proceso de interpolar las imágenes de las fibras. Trabajamos en un código que simula una serie de imágenes con ruido, similares a las que esperamos obtener al medir en el laboratorio. Luego aplicamos los códigos anteriores a estas imágenes simuladas. Todos estos trabajos están en este repositorio de github.
+
+Para generar fibras que se muevan aleatoriamente, lo que hacemos es tomar cuatro puntos aleatorios, unirlos mediante splines cúbicos, permitirles a estos puntos moverse cada uno con una random walk y volver a unir los puntos resultantes mediante splines nuevamente. Una vez que tenemos una serie de imágenes que sigen esta dinámica, medimos la longitud de la primer curva y forzamos a que el resto tenga la misma (cortando los extremos). Para evitar que una fibra difiera mucho respecto de la anterior, permitimos que la random walk se de en un radio determinao alrededor de cada punto.
+
+Tenemos charla de avance el 3/6, y justamente esto que explicamos en el párrafo anterior es lo que vamos a contar.
