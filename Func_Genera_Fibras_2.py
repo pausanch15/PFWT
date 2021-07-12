@@ -108,7 +108,7 @@ def genera_im_fibra(fibra, bins=500, sigma=1, ruido=0.003, fondo=0.05):
     
     return im_fibra
 
-def genera_im_dinamica(frames=10, n_fibras=2, bins=200, sigma=1, ruido=0.003, fondo=0.05, drift=0):
+def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fondo=0.05, drift=0):
     """
     Genera las imagenes de la dinamica de fibras. Esta función ya genera las fibras.
     n_fibras = la cantidad de fibras que se usa para hacer la dinamica, tiene que ser mayor o igual a 2
@@ -129,20 +129,26 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=200, sigma=1, ruido=0.003, fo
 #    print(ox,oy)
     for i in range( (n_fibras-1)*frames ):
         x_f, y_f = np.real(dinam[:,i]), np.imag(dinam[:,i])
+
+        dr = drift*np.random.random(2) - drift/2
+        ox += int(dr[0])
+        oy += int(dr[1])
+        x_f, y_f = x_f*bins + ox, y_f*bins + oy
+        
         spl, u = splprep([x_f, y_f], s=0)
         t_spl = np.linspace(0, 1, len(x_f)*10)
         fr = splev(t_spl, spl)
         splines.append(spl)
         
-        im_fib, x_ed, y_ed = np.histogram2d(*fr, bins)
+        im_fibra, x_ed, y_ed = np.histogram2d(*fr, 1000, [[0,1000],[0,1000]])
     
-        dr = drift*np.random.random(2) - drift/2
-        ox += int(dr[0])
-        oy += int(dr[1])
+#        dr = drift*np.random.random(2) - drift/2
+#        ox += int(dr[0])
+#        oy += int(dr[1])
 #        print(dr,' ',ox,ox+bins,' ',oy,oy+bins)
         
-        im_fibra = np.zeros((1000, 1000)) #Imagen más grande para poner la fibra
-        im_fibra[ox:(ox+bins), oy:(oy+bins)] = im_fib
+#        im_fibra = np.zeros((1000, 1000)) #Imagen más grande para poner la fibra
+#        im_fibra[ox:(ox+bins), oy:(oy+bins)] = im_fib
     
         im_fibra = im_fibra==0
         im_fibra = dilation(1-im_fibra)
