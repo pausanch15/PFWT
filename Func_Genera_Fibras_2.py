@@ -124,7 +124,7 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fo
     
     imagenes = []
     splines = []
-    origen = np.random.random(2) * (1000-bins-100-50) + 150
+    origen = np.random.random(2) * (1000-bins-200-50) + 250
     ox, oy = int(origen[0]), int(origen[1])
 #    print(ox,oy)
     for i in range( (n_fibras-1)*frames ):
@@ -134,6 +134,14 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fo
         ox += int(dr[0])
         oy += int(dr[1])
         x_f, y_f = x_f*bins + ox, y_f*bins + oy
+        if np.min(x_f) < 0 or np.max(x_f) > 1000:
+            x_f = x_f - ox
+            ox -= 2*int(dr[0])
+            x_f = x_f + 2*ox
+        if np.min(y_f) < 0 or np.max(y_f) > 1000:
+            y_f = y_f - oy
+            oy -= 2*int(dr[1])
+            y_f = y_f - 2*oy
         
         spl, u = splprep([x_f, y_f], s=0)
         t_spl = np.linspace(0, 1, len(x_f)*10)
