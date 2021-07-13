@@ -1,33 +1,79 @@
 #Combino los cambios de ayer durante la llamada con la version orginal del prueba_splines. Trato de hacer estadistica de otra forma.
 #Cambio tambien la funcion para que el numero a partir del cual binarizamos sea el que charlamos con Pablo.
-import Func_Splines as spl
-import Func_Genera_Fibras as gf
-from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
-from skimage.measure import label, regionprops
+import matplotlib.animation as animation
+from scipy.interpolate import splev, splrep, splprep
 from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
-from scipy.interpolate import CubicSpline, splev, splrep, splprep
-from scipy.signal import convolve2d, savgol_filter
-from itertools import permutations
-import imageio
-
+from skimage.util import random_noise
+from skimage.filters import gaussian
+import Func_Genera_Fibras_2 as gf
+#plt.ion()
+import Func_Splines as spl
+from time import time
+#%%
 #Generamos n fibras
 np.random.seed(12)
-n = 10
-imagenes, fib = gf.crear_im_fibra(n+1, ruido=0.0015, fondo=0.05, salto=50, drift=0)
-fibras = spl.encuentra_fibra(imagenes)
-
+t1 = time()
+imagenes, splineso = gf.genera_im_dinamica(frames=1,n_fibras=100,drift=50)
+t2 = time()
+t2-t1, len(imagenes)
+#%%
+t1 = time()
+fibras,bbs = spl.encuentra_fibra(imagenes,binariza=50)
+splines = []
+for ff in range(len(imagenes)):
+#    print(ff,end=' ')
+    fibra,bb = fibras[ff], bbs[ff]
+    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+    tramos = spl.ordenar_fibra(tramos)
+    curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+    splines.append(spline)
+t2 = time()
+t2-t1
+#%%
 #Probamos solo con una
-ff = 5
+ff = 59 #93,88,76,60,51,18,8,5,3,42,59
+
+t_spl = np.linspace(0, 1, 10000)
+xf, yf = splev(t_spl, splines[ff])
+yo, xo = splev(t_spl, splineso[ff])
 
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
-#plt.imshow(dilation(255-imagenes[ff]))
+plt.plot(xf, yf, 'r-')
+plt.plot(xo, yo, 'g-')
+#plt.plot(xf-xo, 'r-')
+#plt.plot(yf-yo, 'g-')
+plt.show()
+#%%
+dx, dy, dxdy = [], [], []
+t_spl = np.linspace(0,1,10000)
+for i in range(len(imagenes)):
+    if i in [3,5,8,42,51,60,88,93]: continue
+    xf,yf = splev(t_spl,splines[i])
+    yo,xo = splev(t_spl,splineso[i])
+    if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
+        xo = xo[::-1]
+        yo = yo[::-1]
+    if np.max(np.abs(yf-yo)) > 20: print(i)
+    dx = dx + list(xf-xo)
+    dy = dy + list(yf-yo)
+    dxdy = dxdy + list( (xf-xo)+(yf-yo) )
+#%%
+plt.figure()
+plt.hist(dx,bins=50,color='blue',label='x',alpha=0.5)
+plt.hist(dy,bins=50,color='red',label='y',alpha=0.5)
+plt.legend()
+plt.show()
+plt.figure()
+plt.hist(dxdy,bins=50)
+plt.title('(xf-xo)+(yf-yo)')
 plt.show()
 
+np.mean(dxdy), np.std(dxdy)
+#%%
 #Vemos el histograma de la imagen, su media y esa media menos tres desvios (esta cantidad es la que fijaria el parametro de binarizacion en cada caso)
 plt.figure()
 plt.hist(imagenes[ff].flatten(), bins=100, facecolor='k')
