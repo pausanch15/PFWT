@@ -13,7 +13,7 @@ import networkx as nx
 # @profile
 def encuentra_fibra(imagenes, connec=4, binariza=110):
     fibras, bbs = [], []
-    for im in imagenes:
+    for im_n, im in enumerate(imagenes):
         im = np.asarray(im)
 #        binariza = np.mean(im.flatten())-5*np.std(im.flatten())
         im = im<binariza 
@@ -21,14 +21,20 @@ def encuentra_fibra(imagenes, connec=4, binariza=110):
         fibra = remove_small_objects(im, connectivity=connec)
         # li = label(fibra)
         prop = regionprops(fibra.astype(int))
-        bb = prop[0].bbox
-        bbs.append(bb)
-        recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
-        fibra_t = thin(recorte)
-        # fibra2 = thin(fibra[1:500, 1:500])
-        fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
-#        fibras.append(fibra)
-        fibras.append(fibra_t)
+        try:
+            bb = prop[0].bbox
+            bbs.append(bb)
+            recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
+            fibra_t = thin(recorte)
+            # fibra2 = thin(fibra[1:500, 1:500])
+            fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
+    #        fibras.append(fibra)
+            fibras.append(fibra_t)
+        except:
+            # print(f'Falló en la imagen {im_n}')
+            # print(prop)
+            # print()
+            pass
     return fibras, bbs
 
 def cortar_fibra(fibra, cortar_ruido=True): # la fibra con el thin ya hecho
