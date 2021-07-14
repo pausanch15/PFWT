@@ -13,17 +13,17 @@ import Func_Splines as spl
 from time import time
 #%%
 #Generamos n fibras
-np.random.seed(12)
+np.random.seed(13)
 t1 = time()
-imagenes, splineso = gf.genera_im_dinamica(frames=1,n_fibras=100,drift=50)
+imagenes, splineso = gf.genera_im_dinamica(frames=1,n_fibras=100,drift=30,Nt=7)
 t2 = time()
 t2-t1, len(imagenes)
 #%%
 t1 = time()
-fibras,bbs = spl.encuentra_fibra(imagenes,binariza=50)
+fibras,bbs = spl.encuentra_fibra(imagenes,binariza=70)
 splines = []
-for ff in range(len(imagenes)):
-#    print(ff,end=' ')
+for ff in range(len(fibras)):
+    print(ff,end=' ')
     fibra,bb = fibras[ff], bbs[ff]
     tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
     tramos = spl.ordenar_fibra(tramos)
@@ -33,7 +33,7 @@ t2 = time()
 t2-t1
 #%%
 #Probamos solo con una
-ff = 59 #93,88,76,60,51,18,8,5,3,42,59
+ff = 10 #61, 95
 
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
@@ -41,7 +41,8 @@ yo, xo = splev(t_spl, splineso[ff])
 
 plt.figure()
 plt.set_cmap('gray')
-plt.imshow(imagenes[ff])
+#plt.imshow(imagenes[ff])
+#plt.imshow(fibras[ff])
 plt.plot(xf, yf, 'r-')
 plt.plot(xo, yo, 'g-')
 #plt.plot(xf-xo, 'r-')
@@ -51,13 +52,13 @@ plt.show()
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(imagenes)):
-    if i in [3,5,8,42,51,60,88,93]: continue
+    if i in [4,61,95]: continue#[3,5,8,42,51,60,88,93]: continue
     xf,yf = splev(t_spl,splines[i])
     yo,xo = splev(t_spl,splineso[i])
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
         xo = xo[::-1]
         yo = yo[::-1]
-    if np.max(np.abs(yf-yo)) > 20: print(i)
+    if np.max(np.abs(yf-yo)) > 5: print(i)
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
     dxdy = dxdy + list( (xf-xo)+(yf-yo) )
