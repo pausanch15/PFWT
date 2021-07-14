@@ -31,9 +31,9 @@ def encuentra_fibra(imagenes, connec=4, binariza=110):
     #        fibras.append(fibra)
             fibras.append(fibra_t)
         except:
-            # print(f'Falló en la imagen {im_n}')
-            # print(prop)
-            # print()
+#            print(f'Falló en la imagen {im_n}')
+#            print(prop)
+#            print()
             pass
     return fibras, bbs
 
