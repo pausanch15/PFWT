@@ -329,8 +329,11 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
 
     if not list(bordes[0]) == list(pri_tramo[0]):
         pri_tramo = np.flip(pri_tramo,axis=0)
-    if not list(bordes[1]) == list(ult_tramo[-1]):
-        ult_tramo = np.flip(ult_tramo,axis=0)    
+    try:
+        if not list(bordes[1]) == list(ult_tramo[-1]):
+            ult_tramo = np.flip(ult_tramo,axis=0)
+    except:
+        pass 
     
     nudo = []
     for i in range(len(tramos)):
