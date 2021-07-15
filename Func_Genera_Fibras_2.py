@@ -108,7 +108,7 @@ def genera_im_fibra(fibra, bins=500, sigma=1, ruido=0.003, fondo=0.05):
     
     return im_fibra
 
-def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fondo=0.05, drift=0):
+def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fondo=0.05, drift=0, alpha=0.1, Nt=8):
     """
     Genera las imagenes de la dinamica de fibras. Esta función ya genera las fibras.
     n_fibras = la cantidad de fibras que se usa para hacer la dinamica, tiene que ser mayor o igual a 2
@@ -116,7 +116,7 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fo
     """
     fibras = []
     for i in range(n_fibras):
-        fib = generar_fibra(N=100, L=1, alpha=0.1, Nt=8)
+        fib = generar_fibra(N=100, L=1, alpha=alpha, Nt=Nt)
         fibras.append(fib)
     
     dinam = generar_dinamica(fibras,frames)
@@ -124,9 +124,8 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fo
     
     imagenes = []
     splines = []
-    origen = np.random.random(2) * (1000-bins-100-50) + 150
+    origen = np.random.random(2) * (1000-bins-200-50) + 250
     ox, oy = int(origen[0]), int(origen[1])
-#    print(ox,oy)
     for i in range( (n_fibras-1)*frames ):
         x_f, y_f = np.real(dinam[:,i]), np.imag(dinam[:,i])
 
@@ -134,7 +133,15 @@ def genera_im_dinamica(frames=10, n_fibras=2, bins=400, sigma=1, ruido=0.003, fo
         ox += int(dr[0])
         oy += int(dr[1])
         x_f, y_f = x_f*bins + ox, y_f*bins + oy
-        
+        if np.min(x_f) < 0 or np.max(x_f) > 1000:
+            x_f = x_f - ox
+            ox -= 2*int(dr[0])
+            x_f = x_f + 2*ox
+        if np.min(y_f) < 0 or np.max(y_f) > 1000:
+            y_f = y_f - oy
+            oy -= 2*int(dr[1])
+            y_f = y_f + 2*oy
+            
         spl, u = splprep([x_f, y_f], s=0)
         t_spl = np.linspace(0, 1, len(x_f)*10)
         fr = splev(t_spl, spl)
