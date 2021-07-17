@@ -36,29 +36,29 @@ for ff in range(len(fibras)):
 tf = time()
 print(f'\nTarda {tf-ti} segundos en interpolar todas las fibras de las imágenes.')
 #%%
-ff = 5 #23,29 #5,41
+ff = 23 #23,29 #5,41
 
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
 yo, xo = splev(t_spl, splineso[ff])
 
-#t1 = time()
-#xfn, yfn = equies(splines[ff],N=100)
-#yon, xon = equies(splineso[ff],N=100)
-#t2 = time()
-#print(t2-t1,len(xfn), len(xon))
+u = np.linspace(0,1,1001)
+steps = 50000 # The more subdivisions the better
+t1 = time()
+xf,yf,z = uQuery([xf,yf],u,steps).T
+xo,yo,z = uQuery([xo,yo],u,steps).T
+t2 = time()
+print(t2-t1)
 
-
-np.interp()
+#np.interp()
 
 plt.figure()
 plt.set_cmap('gray')
-#plt.imshow(imagenes[ff])
+plt.imshow(imagenes[ff])
 #plt.imshow(fibras[ff],cmap='gray_r')
-ini,fin = 0,-1000
+ini,fin = 0,-1
 plt.plot(xf[ini:fin], yf[ini:fin], 'r-')
-plt.plot(xo[::1][ini:fin], yo[::1][ini:fin], 'g-')
-print((xf-xo)[0],(xf-xo)[fin],(yf-yo)[0],(yf-yo)[fin])
+plt.plot(xo[::-1][ini:fin], yo[::-1][ini:fin], 'g-')
 #plt.plot(xf-xo[::1], 'g-')
 #plt.plot(yf-yo[::1], 'g--')
 #plt.plot(xfn-xon[::1], 'r-')
@@ -95,8 +95,54 @@ def equies(spl,N=100): #lo que intente para equiespaciar, en general funciona pe
 def div_cur(x,y):
     xs, ys = [], []
     
+    
+def uQuery(pts,u,steps=100,projection=True): 
+#https://stackoverflow.com/questions/34941799/querying-points-on-a-3d-spline-at-specific-parametric-values-in-python
+    ''' Brute force point query on spline
+        pts = [x,y]
+        u      = list of queries (0-1)
+        steps  = number of curve subdivisions (higher value = more precise result)
+        projection = method by wich we get the final result
+                     - True : project a query onto closest spline segments.
+                              this gives good results but requires a high step count
+                     - False: modulates the parametric samples and recomputes new curve with splev.
+                              this can give better results with fewer samples.
+                              definitely works better (and cheaper) when dealing with b-splines (not in this examples)
+
+    '''
+    u = np.clip(u,0,1) # Clip u queries between 0 and 1
+    x,y = pts[0],pts[1]
+    z = np.zeros_like(x)
+    cv = np.vstack((x,y,z)).T
+    # Create spline points
+    samples = np.linspace(0,1,steps)
+    tck,u_=interpolate.splprep(cv.T,s=0.0)
+    p = np.array(interpolate.splev(samples,tck)).T  
+    # at first i thought that passing my query list to splev instead
+    # of np.linspace would do the trick, but apparently not.    
+
+    # Approximate spline length by adding all the segments
+    p_= np.diff(p,axis=0) # get distances between segments
+    m = np.sqrt((p_*p_).sum(axis=1)) # segment magnitudes
+    s = np.cumsum(m) # cumulative summation of magnitudes
+    s/=s[-1] # normalize distances using its total length
+
+    # Find closest index boundaries
+    s = np.insert(s,0,0) # prepend with 0 for proper index matching
+    i0 = (s.searchsorted(u,side='left')-1).clip(min=0) # Find closest lowest boundary position
+    i1 = i0+1 # upper boundary will be the next up
+
+    # Return projection on segments for each query
+    if projection:
+        return ((p[i1]-p[i0])*((u-s[i0])/(s[i1]-s[i0]))[:,None])+p[i0]
+
+    # Else, modulate parametric samples and and pass back to splev
+    mod = (((u-s[i0])/(s[i1]-s[i0]))/steps)+samples[i0]
+    return np.array(interpolate.splev(mod,tck)).T  
 #%%
 #Hago el histograma para todas
+u = np.linspace(0,1,1001)
+steps = 50000
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fibras)):
@@ -106,6 +152,8 @@ for i in range(len(fibras)):
 #    xf,yf = equies(splines[i],N=100)
 #    yo,xo = equies(splineso[i],N=100)
 #    if len(xf)!= len(xo): print(i)
+    xf,yf,z = uQuery([xf,yf],u,steps).T
+    xo,yo,z = uQuery([xo,yo],u,steps).T
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
         xo = xo[::-1]
         yo = yo[::-1]
