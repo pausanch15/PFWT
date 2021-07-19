@@ -14,57 +14,59 @@ plt.ion()
 #%%
 #Genero las imágenes con ruido de estas fibras. Me fijo cuánto tarda en hacer esto. Genero n imágenes entre cada imagen extremo. Uso e extremos (imágenes intermedias).
 n = 1
-e = 50
+e = 500
 np.random.seed(12)
 ti = time()
-imagenes, splineso = gf.genera_im_dinamica(frames=n, n_fibras=e, drift=0, alpha=0.1,N=10,Nt=7)
+imagenes, splineso = gf.genera_im_dinamica(frames=n, n_fibras=e, drift=0, alpha=0.1,N=4,Nt=7)
 tf = time()
-print(f'Tarda {tf-ti} segundos en generar {len(imagenes)} imágenes.')
+print(tf-ti)
 #%%
 #Hago esto para todas las imágenes generadas.
 #Interpolo todas las fibras. Me fijo cuánto tarda
 ti = time()
-fibras, bbs = spl.encuentra_fibra(imagenes,binariza=63)
+fibras, bbs = spl.encuentra_fibra(imagenes,binariza=65)
 splines = []
 for ff in range(len(fibras)):
+    if ff in [121,175,464,467]: 
+        splines.append('Nan')
+        continue
     print(ff,end=' ')
     fibra,bb = fibras[ff], bbs[ff]
-    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=True)
     tramos = spl.ordenar_fibra(tramos)
-    curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+    curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
     splines.append(spline)
 tf = time()
-print(f'\nTarda {tf-ti} segundos en interpolar todas las fibras de las imágenes.')
+print(tf-ti)
 #%%
-ff = 23 #23,29 #5,41
+ff = 450
+#trabas: 121, 175, 464, 467 
+#todos: 7 23 55 80 163 217 218 235 277 286 294 298 343 399 409 425 450
+#leves: 7,294
+#sacar: 121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,411,
+#417,474,479,480,485,159,162,168,218
 
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
 yo, xo = splev(t_spl, splineso[ff])
-
+#
 u = np.linspace(0,1,1001)
 steps = 50000 # The more subdivisions the better
-t1 = time()
-xf,yf,z = uQuery([xf,yf],u,steps).T
-xo,yo,z = uQuery([xo,yo],u,steps).T
-t2 = time()
-print(t2-t1)
+#t1 = time()
+#xf,yf,z = uQuery([xf,yf],u,steps).T
+#xo,yo,z = uQuery([xo,yo],u,steps).T
+#t2 = time()
+#print(t2-t1)
 
-#np.interp()
 
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
-#plt.imshow(fibras[ff],cmap='gray_r')
-ini,fin = 0,-1
-plt.plot(xf[ini:fin], yf[ini:fin], 'r-')
-plt.plot(xo[::-1][ini:fin], yo[::-1][ini:fin], 'g-')
-#plt.plot(xf-xo[::1], 'g-')
-#plt.plot(yf-yo[::1], 'g--')
-#plt.plot(xfn-xon[::1], 'r-')
-#plt.plot(yfn-yon[::1], 'r--')
-#plt.plot(xfn,yfn,'r.')
-#plt.plot(xon,yon,'g.')
+plt.imshow(fibras[ff],cmap='gray_r')
+plt.plot(xf, yf, 'r-')
+plt.plot(xo[::1], yo[::1], 'g-')
+#plt.plot(xf-xo[::1], 'r-')
+#plt.plot(yf-yo[::1], 'g-')
 plt.show()
 #%%
 df = np.sqrt((xf[:-1]-xf[1:])**2 + (yf[:-1]-yf[1:])**2)
@@ -90,11 +92,7 @@ def equies(spl,N=100): #lo que intente para equiespaciar, en general funciona pe
         if np.sqrt((xx-xn[-1])**2 + (yy-yn[-1])**2) >= dist:
             xn.append(xx)
             yn.append(yy)
-    return np.array(xn),np.array(yn)
-
-def div_cur(x,y):
-    xs, ys = [], []
-    
+    return np.array(xn),np.array(yn)    
     
 def uQuery(pts,u,steps=100,projection=True): 
 #https://stackoverflow.com/questions/34941799/querying-points-on-a-3d-spline-at-specific-parametric-values-in-python
@@ -141,12 +139,14 @@ def uQuery(pts,u,steps=100,projection=True):
     return np.array(interpolate.splev(mod,tck)).T  
 #%%
 #Hago el histograma para todas
+t1 = time()
 u = np.linspace(0,1,1001)
 steps = 50000
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fibras)):
-    if i in [7,32,37]: continue
+    if i in [121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,
+             411,417,474,479,480,485,159,162,168,218]: continue
     xf,yf = splev(t_spl,splines[i])
     yo,xo = splev(t_spl,splineso[i])
 #    xf,yf = equies(splines[i],N=100)
@@ -157,10 +157,13 @@ for i in range(len(fibras)):
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
         xo = xo[::-1]
         yo = yo[::-1]
-    if np.max(np.abs(yf-yo)) > 20 or np.max(np.abs(xf-xo)) > 4: print(i,end=' ')
+    minn = 5
+    if np.max(np.abs(yf-yo)) > minn or np.max(np.abs(xf-xo)) > minn: print(i,end=' ')
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
     dxdy = dxdy + list((xf-xo)+(yf-yo))
+t2 = time()
+print(t2-t1)
 #%%   
 plt.figure()
 #plt.hist(dx, bins='auto', color='blue', label='x', alpha=0.5, density=True, stacked=True)
@@ -174,4 +177,4 @@ plt.figure()
 plt.hist(dxdy,bins=50)
 plt.title('(xf-xo)+(yf-yo)')
 plt.show()
-
+print('dx:',np.mean(dx),np.std(dx), '\ndy:',np.mean(dy),np.std(dy))
