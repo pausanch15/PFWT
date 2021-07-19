@@ -178,3 +178,80 @@ plt.hist(dxdy,bins=50)
 plt.title('(xf-xo)+(yf-yo)')
 plt.show()
 print('dx:',np.mean(dx),np.std(dx), '\ndy:',np.mean(dy),np.std(dy))
+
+#Agrego otra forma de hacer lo mismo, pero que puede tener errores.
+#Armo imagenes, encuentro fribras y hago estadística
+# dx, dy, dxdy = [], [], []
+dx_f, dy_f, dxdy_f = open('dx_f.txt', "w"), open('dy_f.txt', "w"), open('dxdy_f.txt', "w")
+
+j = 0
+while j < 4:
+    print(f'Vamos por la tanda {j}.')
+    
+    n = 10
+    e = 50
+    np.random.seed(12)
+    ti = time()
+    imagenes, splineso = gf.genera_im_dinamica(frames=n, n_fibras=e, drift=0, alpha=0.1,N=10,Nt=7)
+    tf = time()
+    print(f'Tarda {tf-ti} segundos en generar {len(imagenes)} imágenes.')
+
+    ti = time()
+    fibras, bbs = spl.encuentra_fibra(imagenes,binariza=63)
+    splines = []
+    for ff in range(len(fibras)):
+        # print(ff,end=' ')
+        fibra,bb = fibras[ff], bbs[ff]
+        tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+        tramos = spl.ordenar_fibra(tramos)
+        curv,spline = spl.pegar_fibra(tramos,bordes,window=21,s=10)
+        splines.append(spline)
+    tf = time()
+    print(f'\nTarda {tf-ti} segundos en interpolar todas las fibras de las imágenes.')
+
+    u = np.linspace(0,1,1001)
+    steps = 50000
+    dx, dy, dxdy = [], [], []
+    t_spl = np.linspace(0,1,10000)
+    for i in range(len(fibras)):
+        if i in [7,32,37]: continue
+        xf,yf = splev(t_spl,splines[i])
+        yo,xo = splev(t_spl,splineso[i])
+        xf,yf,z = uQuery([xf,yf],u,steps).T
+        xo,yo,z = uQuery([xo,yo],u,steps).T
+        if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
+            xo = xo[::-1]
+            yo = yo[::-1]
+        if np.max(np.abs(yf-yo)) > 20 or np.max(np.abs(xf-xo)) > 4: print(i,end=' ')
+        dx = dx + list(xf-xo)
+        dy = dy + list(yf-yo)
+        dxdy = dxdy + list((xf-xo)+(yf-yo))
+
+    np.savetxt(dx_f, dx, delimiter=",")
+    np.savetxt(dy_f, dy, delimiter=",")
+    np.savetxt(dxdy_f, dxdy, delimiter=",")
+
+    j += 1
+
+dx_f.close()
+dy_f.close()
+dxdy_f.close()
+
+#Hago los hisotgramas
+dx_f, dy_f, dxdy_f = np.loadtxt('dx_f.txt', delimiter=','), np.loadtxt('dy_f.txt', delimiter=','), np.loadtxt('dxdy_f.txt', delimiter=',')
+
+ti = time()
+histx, limx = np.histogram(dx_f, bins='auto')
+histy, limy = np.histogram(dy_f, bins='auto')
+histxy, limxy = np.histogram(dxdy_f, bins='auto')
+tf = time()
+print(f'Tarda {tf-ti} segundos en generar el histograma para {len(imagenes)} imágenes.')
+
+ti = time()
+plt.figure()
+plt.plot(histx, color='blue', label='x', alpha=0.5)
+plt.plot(histy, color='red', label='y', alpha=0.5)
+plt.legend()
+plt.show()
+tf = time()
+print(f'Tarda {tf-ti} segundos hacer el gráfico de los histogramas')
