@@ -10,14 +10,15 @@ import Func_Genera_Fibras_2 as gf
 import Func_Splines as spl
 from time import time
 from scipy import interpolate
+from itertools import permutations
 plt.ion()
 #%%
 #Genero las imágenes con ruido de estas fibras. Me fijo cuánto tarda en hacer esto. Genero n imágenes entre cada imagen extremo. Uso e extremos (imágenes intermedias).
 n = 1
-e = 500
+e = 50
 np.random.seed(12)
 ti = time()
-imagenes, splineso = gf.genera_im_dinamica(frames=n, n_fibras=e, drift=0, alpha=0.1,N=4,Nt=7)
+imagenes, splineso = gf.genera_im_dinamica(frames=n, n_fibras=e, alpha=0.1,N=100,Nt=7)
 tf = time()
 print(tf-ti)
 #%%
@@ -39,15 +40,107 @@ for ff in range(len(fibras)):
 tf = time()
 print(tf-ti)
 #%%
-ff = 450
-#trabas: 121, 175, 464, 467 
-#todos: 7 23 55 80 163 217 218 235 277 286 294 298 343 399 409 425 450
-#leves: 7,294
-#sacar: 121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,411,
-#417,474,479,480,485,159,162,168,218
+n_int = 1
+n_fib = 50
+imagenes = []
+splines, splineso = [], []
+curvs, fibras, tttr = [],[],[]
+np.random.seed(12)
+t1 = time()
+for i in range(n_fib):
+    im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=100,Nt=8)
+    imagenes.append(im[0])
+    splineso.append(sss[0])
+#    if i ==26: continue
+    print(i,end=' ')
+    fibrass,bbs = spl.encuentra_fibra(im,binariza=108)
+    fibra,bb = fibrass[0], bbs[0]
+    fibras.append(fibra)
+    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=True)
+    tramos = spl.ordenar_fibra(tramos)
+    tttr.append(tramos)
+#    try:
+#        curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
+#        splines.append(spline)
+#        curvs.append(curv)
+#    except UnboundLocalError: 
+#        splines.append('Nan')
+#        curvs.append('Nan')
+#        print('\n',i)
+t2 = time()
+print(t2-t1)
+#%%
+tramos = tttr[37]
+bordes = [[566,614],[532,687]]
+
+t1 = time()
+curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
+#tra_medios = []
+#for i in range(len(tramos)):
+#    if list(bordes[0]) in tramos[i].tolist():
+#        pri_tramo = tramos[i]
+#    elif list(bordes[1]) in tramos[i].tolist():
+#        ult_tramo = tramos[i]
+#    else:
+#        tra_medios.append(tramos[i])
+#
+#if not list(bordes[0]) == list(pri_tramo[0]):
+#    pri_tramo = np.flip(pri_tramo,axis=0)
+#    
+#
+#if not list(bordes[1]) == list(ult_tramo[-1]):
+#    ult_tramo = np.flip(ult_tramo,axis=0)
+#
+#nudo = []
+#for i in range(len(tramos)):
+#    if len(tramos[i]) < 30 and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
+#        nudo.append(i)
+#nudo.reverse()
+#for i in nudo:
+#    del tramos[i]
+#
+#print('aca')
+#pos_tra_med = []
+#for i in range(len(tra_medios)):
+#    pos_tra_med.append( ( tra_medios[i],np.flip(tra_medios[i],axis=0) ))
+#    
+#n = len(pos_tra_med)
+#perm = list(permutations(range(n),n))
+#perm_inv = list(set(list(permutations([0,1]*n, n))))
+#min_curv = 10**3
+#for i in range(len(perm)):
+#    for k in range(len(perm_inv)):
+#        orden = []
+#        for j,l in zip(perm[i],perm_inv[k]):
+#            orden.append(pos_tra_med[j][l])
+#        orden.insert(0,pri_tramo)
+#        orden.append(ult_tramo)
+#        fib = np.concatenate(tuple(orden))
+#        cur,m_curv,_,splsd = spl.curvatura(fib,window=17,s=10)
+#        if m_curv < min_curv:
+#            min_curv = m_curv
+#            curvatur = cur
+#            spli = splsd    
+t2 = time()
+t2-t1
+#%%
+t_spl= np.linspace(0, 1, 1000)
+yo, xo = splev(t_spl, spli)
+plt.figure()
+plt.plot(xo,yo,'-')
+plt.show()
+#print(len(pos_tra_med))
+#plt.figure()
+#for i in range(len(tra_medios)):
+#    plt.plot(tra_medios[i][:,0],tra_medios[i][:,1],'b-o')
+#plt.plot(pri_tramo[:,0],pri_tramo[:,1],'k-o')
+#plt.plot(ult_tramo[:,0],ult_tramo[:,1],'y-o')
+#plt.show()
+#%%
+ff = 37
 
 t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, splines[ff])
+#xf, yf = splev(t_spl, splines[ff])
 yo, xo = splev(t_spl, splineso[ff])
 #
 u = np.linspace(0,1,1001)
@@ -63,11 +156,15 @@ plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
 plt.imshow(fibras[ff],cmap='gray_r')
-plt.plot(xf, yf, 'r-')
-plt.plot(xo[::1], yo[::1], 'g-')
+#plt.plot(xf, yf, 'r-')
+#plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(xf-xo[::1], 'r-')
 #plt.plot(yf-yo[::1], 'g-')
 plt.show()
+#plt.figure()
+#plt.plot(curvs[ff])
+#print(np.max(curvs[ff]))
+#plt.show()
 #%%
 df = np.sqrt((xf[:-1]-xf[1:])**2 + (yf[:-1]-yf[1:])**2)
 do = np.sqrt((xo[:-1]-xo[1:])**2 + (yo[:-1]-yo[1:])**2)
@@ -145,8 +242,8 @@ steps = 50000
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fibras)):
-    if i in [121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,
-             411,417,474,479,480,485,159,162,168,218]: continue
+#    if i in [121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,
+#             411,417,474,479,480,485,159,162,168,218]: continue
     xf,yf = splev(t_spl,splines[i])
     yo,xo = splev(t_spl,splineso[i])
 #    xf,yf = equies(splines[i],N=100)
