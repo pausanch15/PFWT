@@ -140,7 +140,7 @@ def fibra_a_skeleton(xfibra, L=300, S=(1024, 1024), graph=False):
 
 def curva(x,y,s=0):
     porder = 3
-    spl, u = splprep([xsg,ysg],s=s)
+    spl, u = splprep([x,y],s=s)
     t_spl = np.linspace(0,1,100000)
 #    spline = splev(t_spl,spl)
     spline_1d = splev(t_spl,spl,der=1)
