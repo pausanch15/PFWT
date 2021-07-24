@@ -44,7 +44,7 @@ n_int = 1
 n_fib = 50
 imagenes = []
 splines, splineso = [], []
-curvs, fibras, tttr = [],[],[]
+curvs, fibras, tttr, brrr = [],[],[],[]
 np.random.seed(12)
 t1 = time()
 for i in range(n_fib):
@@ -59,6 +59,7 @@ for i in range(n_fib):
     tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=True)
     tramos = spl.ordenar_fibra(tramos)
     tttr.append(tramos)
+    brrr.append(bordes)
 #    try:
 #        curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
 #        splines.append(spline)
@@ -70,79 +71,80 @@ for i in range(n_fib):
 t2 = time()
 print(t2-t1)
 #%%
-tramos = tttr[37]
-bordes = [[566,614],[532,687]]
+tramos = tttr[38]
+bordes = brrr[38]
 
 t1 = time()
-curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
-#tra_medios = []
-#for i in range(len(tramos)):
-#    if list(bordes[0]) in tramos[i].tolist():
-#        pri_tramo = tramos[i]
-#    elif list(bordes[1]) in tramos[i].tolist():
-#        ult_tramo = tramos[i]
-#    else:
-#        tra_medios.append(tramos[i])
+tra_medios = []
+for i in range(len(tramos)):
+    if list(bordes[0]) in tramos[i].tolist():
+        pri_tramo = tramos[i]
+    elif list(bordes[1]) in tramos[i].tolist():
+        ult_tramo = tramos[i]
+    else:
+        tra_medios.append(tramos[i])
+
+if not list(bordes[0]) == list(pri_tramo[0]):
+    pri_tramo = np.flip(pri_tramo,axis=0)
+    
+
+if not list(bordes[1]) == list(ult_tramo[-1]):
+    ult_tramo = np.flip(ult_tramo,axis=0)
+
+nudo = []
+for i in range(len(tramos)):
+    if len(tramos[i]) < 30 and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
+        nudo.append(i)
+nudo.reverse()
+for i in nudo:
+    del tramos[i]
 #
-#if not list(bordes[0]) == list(pri_tramo[0]):
-#    pri_tramo = np.flip(pri_tramo,axis=0)
+print('aca')
+pos_tra_med = []
+for i in range(len(tra_medios)):
+    pos_tra_med.append( ( tra_medios[i],np.flip(tra_medios[i],axis=0) ))
 #    
-#
-#if not list(bordes[1]) == list(ult_tramo[-1]):
-#    ult_tramo = np.flip(ult_tramo,axis=0)
-#
-#nudo = []
-#for i in range(len(tramos)):
-#    if len(tramos[i]) < 30 and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
-#        nudo.append(i)
-#nudo.reverse()
-#for i in nudo:
-#    del tramos[i]
-#
-#print('aca')
-#pos_tra_med = []
-#for i in range(len(tra_medios)):
-#    pos_tra_med.append( ( tra_medios[i],np.flip(tra_medios[i],axis=0) ))
-#    
-#n = len(pos_tra_med)
-#perm = list(permutations(range(n),n))
-#perm_inv = list(set(list(permutations([0,1]*n, n))))
-#min_curv = 10**3
-#for i in range(len(perm)):
-#    for k in range(len(perm_inv)):
-#        orden = []
-#        for j,l in zip(perm[i],perm_inv[k]):
-#            orden.append(pos_tra_med[j][l])
-#        orden.insert(0,pri_tramo)
-#        orden.append(ult_tramo)
-#        fib = np.concatenate(tuple(orden))
-#        cur,m_curv,_,splsd = spl.curvatura(fib,window=17,s=10)
-#        if m_curv < min_curv:
-#            min_curv = m_curv
-#            curvatur = cur
-#            spli = splsd    
+n = len(pos_tra_med)
+perm = list(permutations(range(n),n))
+perm_inv = list(set(list(permutations([0,1]*n, n))))
+min_curv = 10**3
+for i in range(len(perm)):
+    for k in range(len(perm_inv)):
+        orden = []
+        for j,l in zip(perm[i],perm_inv[k]):
+            orden.append(pos_tra_med[j][l])
+        orden.insert(0,pri_tramo)
+        orden.append(ult_tramo)
+        fib = np.concatenate(tuple(orden))
+        cur,m_curv,_,splsd = spl.curvatura(fib,window=17,s=10)
+        if m_curv < min_curv:
+            min_curv = m_curv
+            curvatur = cur
+            spli = splsd    
 t2 = time()
 t2-t1
 #%%
 t_spl= np.linspace(0, 1, 1000)
-yo, xo = splev(t_spl, spli)
+xo, yo = splev(t_spl, spli)
 plt.figure()
 plt.plot(xo,yo,'-')
 plt.show()
-#print(len(pos_tra_med))
+print(len(tra_medios))
 #plt.figure()
-#for i in range(len(tra_medios)):
-#    plt.plot(tra_medios[i][:,0],tra_medios[i][:,1],'b-o')
-#plt.plot(pri_tramo[:,0],pri_tramo[:,1],'k-o')
-#plt.plot(ult_tramo[:,0],ult_tramo[:,1],'y-o')
-#plt.show()
+for i in range(len(tra_medios)):
+    plt.plot(tra_medios[i][:,0],tra_medios[i][:,1],'-o')
+plt.plot(pri_tramo[:,0],pri_tramo[:,1],'k-o')
+plt.plot(ult_tramo[:,0],ult_tramo[:,1],'y-o')
+plt.show()
 #%%
-ff = 37
+ff = 38
 
 t_spl = np.linspace(0, 1, 10000)
 #xf, yf = splev(t_spl, splines[ff])
 yo, xo = splev(t_spl, splineso[ff])
+curv = gf.curva(xo,yo)
 #
+
 u = np.linspace(0,1,1001)
 steps = 50000 # The more subdivisions the better
 #t1 = time()
