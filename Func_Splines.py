@@ -287,13 +287,21 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
         if not list(bordes[0]) == list(pri_tramo[0]):
             pri_tramo = np.flip(pri_tramo,axis=0)
         
+#        nudo = []
+#        for i in range(len(tramos)):
+#            if len(tramos[i]) < tamano_nudo:
+#                nudo.append(i)
+#        nudo.reverse()
+#        for i in nudo:
+#            del tramos[i]
+#            
         nudo = []
-        for i in range(len(tramos)):
-            if len(tramos[i]) < tamano_nudo:
+        for i in range(len(tra_medios)):
+            if len(tra_medios[i]) < tamano_nudo: 
                 nudo.append(i)
         nudo.reverse()
         for i in nudo:
-            del tramos[i]
+            del tra_medios[i]
 
         pos_tra_med = []
         for i in range(len(tra_medios)):
@@ -334,13 +342,21 @@ def pegar_fibra(tramos,bordes,tamano_nudo=30, window=21, s=10):
     if not list(bordes[1]) == list(ult_tramo[-1]):
         ult_tramo = np.flip(ult_tramo,axis=0)
     
+#    nudo = []
+#    for i in range(len(tramos)):
+#        if len(tramos[i]) < tamano_nudo and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
+#            nudo.append(i)
+#    nudo.reverse()
+#    for i in nudo:
+#        del tramos[i]
+        
     nudo = []
-    for i in range(len(tramos)):
-        if len(tramos[i]) < tamano_nudo and bordes[1] not in tramos[i] and bordes[0] not in tramos[i]:
+    for i in range(len(tra_medios)):
+        if len(tra_medios[i]) < tamano_nudo: 
             nudo.append(i)
     nudo.reverse()
     for i in nudo:
-        del tramos[i]
+        del tra_medios[i]
 
     pos_tra_med = []
     for i in range(len(tra_medios)):
