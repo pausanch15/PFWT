@@ -86,7 +86,7 @@ for i in range(n_fib):
 t2 = time()
 print(t2-t1)
 #%%
-ff = 38
+ff = 26 #9,15,26
 
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
@@ -193,8 +193,7 @@ steps = 50000
 dx, dy, dxdy = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fibras)):
-#    if i in [121,175,464,467,57,128,196,214,216,254,281,304,321,323,381,391,
-#             411,417,474,479,480,485,159,162,168,218]: continue
+    if i in [15]: continue
     xf,yf = splev(t_spl,splines[i])
     yo,xo = splev(t_spl,splineso[i])
 #    xf,yf = equies(splines[i],N=100)
@@ -226,7 +225,7 @@ plt.hist(dxdy,bins=50)
 plt.title('(xf-xo)+(yf-yo)')
 plt.show()
 print('dx:',np.mean(dx),np.std(dx), '\ndy:',np.mean(dy),np.std(dy))
-
+#%%
 #Agrego otra forma de hacer lo mismo, pero que puede tener errores.
 #Armo imagenes, encuentro fribras y hago estadística
 # dx, dy, dxdy = [], [], []
