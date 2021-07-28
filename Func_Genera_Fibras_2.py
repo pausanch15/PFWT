@@ -139,7 +139,7 @@ def fibra_a_skeleton(xfibra, L=300, S=(1024, 1024), graph=False):
     return im, x,y 
 
 def curva(x,y,s=0):
-    porder = 3
+#    porder = 3
     spl, u = splprep([x,y],s=s)
     t_spl = np.linspace(0,1,100000)
 #    spline = splev(t_spl,spl)
@@ -148,8 +148,8 @@ def curva(x,y,s=0):
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
     return np.max(curv) # t_spl, spline
 
-def genera_im_dinamica(frames=1, n_fibras=2, L=300, sigma=1, 
-                       ruido=0.003, fondo=0.05, alpha=0.1, Nt=8, N=100):
+def genera_im_dinamica(frames=1, n_fibras=2, L=300, sigma=1, dilat=True,
+                       ruido=0.003, fondo=0.05, alpha=0.1, Nt=8, N=100, curvatura=1.5):
     """
     Genera las imagenes de la dinamica de fibras. Esta función ya genera las fibras.
     n_fibras = la cantidad de fibras que se usa para hacer la dinamica, tiene que ser mayor o igual a 2
@@ -157,9 +157,13 @@ def genera_im_dinamica(frames=1, n_fibras=2, L=300, sigma=1,
     """
     fibras = []
     for i in range(n_fibras):
-        fib = generar_fibra(N=N, L=1, alpha=alpha, Nt=Nt)
-#        x,y = np.real(fib), np.imag(fib)
-#        curm = curva(x,y)
+        cur_m = curvatura+2
+#        print(cur_m)
+        while cur_m > curvatura:
+            fib = generar_fibra(N=N, L=1, alpha=alpha, Nt=Nt)
+            x,y = np.real(fib), np.imag(fib)
+            cur_m = curva(x,y)
+#            print(cur_m)
 #        
         fibras.append(fib)
         
@@ -185,8 +189,9 @@ def genera_im_dinamica(frames=1, n_fibras=2, L=300, sigma=1,
 #        im_fibra[ox:(ox+bins), oy:(oy+bins)] = im_fib
     
         im_fibra = ima==1
-#        im_fibra = dilation(1-im_fibra)
-#        im_fibra = np.array(1-im_fibra,dtype='float')
+        if dilat == True:
+            im_fibra = dilation(1-im_fibra)
+            im_fibra = np.array(1-im_fibra,dtype='float')
         im_fibra = random_noise(im_fibra, mode='s&p', amount=ruido)
         ff = np.linspace(0,999,1024)
         fx,fy = np.meshgrid(ff,ff)
