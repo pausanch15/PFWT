@@ -12,6 +12,7 @@ import Func_Splines as spl
 from time import time
 from scipy import interpolate
 from itertools import permutations
+import h5py 
 plt.ion()
 
 #La función que ordena los splines
@@ -61,7 +62,7 @@ def uQuery(pts,u,steps=100,projection=True):
 #%%
 #Empezamos a crear las imágenes y analizarlas
 n_int = 1
-n_fib = 1000
+n_fib = 100
 imagenes, fibras = [], []
 splines, splineso = [], []
 curvs, fibras, tttr, brrr = [],[],[],[]
@@ -97,6 +98,56 @@ for i in range(n_fib):
     del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
 t2 = time()
 print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')
+#%%
+# Pruebo de guardarlo en un hdf5
+# ver de que no haya un 'Nan' en splines (despues veo que hacer en ese caso)
+tf,c1f,c2f,kf = [],[],[],[]
+to,c1o,c2o,ko = [],[],[],[]
+for i in range(len(splines)):
+    tf.append(splines[i][0])
+    c1f.append(splines[i][1][0])
+    c2f.append(splines[i][1][1])
+    kf.append(splines[i][2])
+    to.append(splineso[i][0])
+    c1o.append(splineso[i][1][0])
+    c2o.append(splineso[i][1][1])
+    ko.append(splineso[i][2])
+
+with h5py.File('estadistica.hdf5', 'w') as f:
+    h_im = f.create_group('imagenes')
+    h_splf = f.create_group('splines_recons')
+    h_splo = f.create_group('splines_orig')
+    dt = h5py.special_dtype(vlen=np.dtype('float64'))
+    
+    h_im.create_dataset('lista_im',data=imagenes)
+    
+    h_splf.create_dataset('lista_splf_t',data=tf,dtype=dt)
+    h_splf.create_dataset('lista_splf_c1',data=c1f,dtype=dt)
+    h_splf.create_dataset('lista_splf_c2',data=c2f,dtype=dt)
+    h_splf.create_dataset('lista_splf_k',data=kf)
+    
+    h_splo.create_dataset('lista_splo_t',data=to)
+    h_splo.create_dataset('lista_splo_c1',data=c1o)
+    h_splo.create_dataset('lista_splo_c2',data=c2o)
+    h_splo.create_dataset('lista_splo_k',data=ko)
+#%%
+imag, splif, splio = [],[],[]
+with h5py.File('estadistica.hdf5', 'r') as f:
+    gim = f.get('imagenes')
+    im_h = gim['lista_im']
+    
+    gspf = f.get('splines_recons')
+    tf_h, kf_h = gspf['lista_splf_t'], gspf['lista_splf_k']
+    c1f_h, c2f_h = gspf['lista_splf_c1'], gspf['lista_splf_c2'] 
+    
+    gspo = f.get('splines_orig')
+    to_h, ko_h = gspo['lista_splo_t'], gspo['lista_splo_k']
+    c1o_h, c2o_h = gspo['lista_splo_c1'], gspo['lista_splo_c2'] 
+    
+    for i in range(len(im_h)):
+        imag.append(im_h[i])
+        splif.append([tf_h[i],[c1f_h[i],c2f_h[i]],kf_h[i]])
+        splio.append([to_h[i],[c1o_h[i],c2o_h[i]],ko_h[i]])
 #%%
 ff = 960 #5 14 15 111 214 248 285 313 383 404 500 521 571 703 733 755 960 
 #sacar: 112,479,541,624,673
