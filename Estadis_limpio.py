@@ -1,3 +1,5 @@
+#A ver si se puede hacer estadística.
+#Esta vez no vamos a crear una lista de n imégenes y despues analizar todas, porque esto llena la memoria. En vez, vamos a crear una imagen, analizarla, después crear otra, analizarla, y así sucesivamente.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -12,6 +14,7 @@ from scipy import interpolate
 from itertools import permutations
 plt.ion()
 
+#La función que ordena los splines
 def uQuery(pts,u,steps=100,projection=True): 
 #https://stackoverflow.com/questions/34941799/querying-points-on-a-3d-spline-at-specific-parametric-values-in-python
     ''' Brute force point query on spline
@@ -56,6 +59,7 @@ def uQuery(pts,u,steps=100,projection=True):
     mod = (((u-s[i0])/(s[i1]-s[i0]))/steps)+samples[i0]
     return np.array(interpolate.splev(mod,tck)).T  
 #%%
+#Empezamos a crear las imágenes y analizarlas
 n_int = 1
 n_fib = 1000
 imagenes, fibras = [], []
@@ -92,7 +96,7 @@ for i in range(n_fib):
         print('\n',i)
     del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
 t2 = time()
-print(t2-t1)
+print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')
 #%%
 ff = 960 #5 14 15 111 214 248 285 313 383 404 500 521 571 703 733 755 960 
 #sacar: 112,479,541,624,673
@@ -114,6 +118,7 @@ plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(yf-yo[::1], 'g-')
 plt.show()
 #%%
+#La función que calcula la curvatura
 def curvatura_pap(x,y):
     splin, u = splprep([x,y],s=0)
     spline_1d = splev(u,splin,der=1)
@@ -122,6 +127,7 @@ def curvatura_pap(x,y):
                  ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
     return curv 
 #%%
+#Ahora evaluamos los splines originales y los obtenidos en un mismo array de puntos, para poder comparar las distancias entre los x y lo y y las curvaturas. Siempre comparamos original vs recuperado.
 t1 = time()
 u = np.linspace(0,1,1000)
 steps = 50000
@@ -147,18 +153,25 @@ for i in range(len(fibras)):
     curv = curv+ list(curvf-curvo)
     del(xf,xo,yo,yf,z)
 t2 = time()
-print('\n',t2-t1)
+print(f'Tarda {t2-t1} segundos en evaluar los splines originales y recuperados de {n_fib} imagenes.')
+
 #%%
+#Hacemos los histogramas
 plt.figure()
 plt.hist(dx, bins=50, color='blue', label='x', alpha=0.5, density=True, stacked=True)
 plt.hist(dy, bins=50, color='red', label='y', alpha=0.5, density=True, stacked=True)
 plt.legend()
 plt.show()
+
 plt.figure()
 plt.hist(curv,bins=200,density=True, stacked=True)
 plt.title('curvatura')
 plt.show()
-print('dx:',np.mean(dx),np.std(dx), '\ndy:',np.mean(dy),np.std(dy),'\ncurv:', np.mean(curv),np.std(curv))
+
+print(f'Para la diferencia en x, la media es de {np.mean(dx)} y el desvío {np.std(dx)}.')
+print(f'Para la diferencia en y, la media es de {np.mean(dy)} y el desvío {np.std(dy)}.')
+print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
+
 
 
 
