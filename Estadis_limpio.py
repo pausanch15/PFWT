@@ -172,8 +172,14 @@ for i in range(len(fibras)):
     if i in [112,479,541,624,673,782]: continue
     if i in [5,14,15,111,214,248,285,313,383,404,500,521,571,703,733,755,960]: continue #estan bien, los saco para ver
 #    print(i)
-    xf,yf = splev(t_spl,splines[i])
-    yo,xo = splev(t_spl,splineso[i])
+    #Comento estas líneas para probar de hacer lo mismo con los splines guardados en archivos
+    # xf,yf = splev(t_spl,splines[i])
+    # yo,xo = splev(t_spl,splineso[i])
+
+    #Pruebo con los splines guardados en archivos
+    xf,yf = splev(t_spl,s[i])
+    yo,xo = splev(t_spl,so[i])
+    
     xf,yf,z = uQuery([xf,yf],u,steps).T
     xo,yo,z = uQuery([xo,yo],u,steps).T
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
