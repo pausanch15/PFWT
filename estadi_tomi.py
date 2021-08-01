@@ -1,18 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+#import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep
-from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
-from skimage.util import random_noise
-from skimage.filters import gaussian
+#from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
+#from skimage.util import random_noise
+#from skimage.filters import gaussian
 import Func_Genera_Fibras_2 as gf
 import Func_Splines as spl
 from time import time
 from scipy import interpolate
-from itertools import permutations
+#from itertools import permutations
 import h5py 
 plt.ion()
-
+#%%
 #La función que ordena los splines
 def uQuery(pts,u,steps=100,projection=True): 
 #https://stackoverflow.com/questions/34941799/querying-points-on-a-3d-spline-at-specific-parametric-values-in-python
@@ -77,7 +77,7 @@ for i in range(n_fib):
     splineso.append(sss[0])
 #    if i ==26: continue
     if i%10 == 0: print(i,end=' ')
-    fibrass,bbs = spl.encuentra_fibra(im,binariza=50)
+    fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
     fibra,bb = fibrass[0], bbs[0]
     fibras.append(fibra)
     tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
@@ -102,22 +102,29 @@ print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')
 tf,c1f,c2f,kf = [],[],[],[]
 to,c1o,c2o,ko = [],[],[],[]
 for i in range(len(splines)):
-    tf.append(splines[i][0])
-    c1f.append(splines[i][1][0])
-    c2f.append(splines[i][1][1])
-    kf.append(splines[i][2])
+    if splines[i] != 'Nan':
+        tf.append(splines[i][0])
+        c1f.append(splines[i][1][0])
+        c2f.append(splines[i][1][1])
+        kf.append(splines[i][2])
+    else:
+        tf.append(['Nan'])
+        c1f.append(['Nan'])
+        c2f.append(['Nan'])
+        kf.append(['Nan'])
+    
     to.append(splineso[i][0])
     c1o.append(splineso[i][1][0])
     c2o.append(splineso[i][1][1])
     ko.append(splineso[i][2])
 
-with h5py.File('estadistica.hdf5', 'w') as f:
-    h_im = f.create_group('imagenes')
+with h5py.File('splines.hdf5', 'w') as f:
+#    h_im = f.create_group('imagenes')
     h_splf = f.create_group('splines_recons')
     h_splo = f.create_group('splines_orig')
     dt = h5py.special_dtype(vlen=np.dtype('float64'))
     
-    h_im.create_dataset('lista_im',data=imagenes)
+#    h_im.create_dataset('lista_im',data=imagenes)
     
     h_splf.create_dataset('lista_splf_t',data=tf,dtype=dt)
     h_splf.create_dataset('lista_splf_c1',data=c1f,dtype=dt)
@@ -128,6 +135,10 @@ with h5py.File('estadistica.hdf5', 'w') as f:
     h_splo.create_dataset('lista_splo_c1',data=c1o)
     h_splo.create_dataset('lista_splo_c2',data=c2o)
     h_splo.create_dataset('lista_splo_k',data=ko)
+    
+with h5py.File('imagenes.hdf5', 'w') as f:
+    h_im = f.create_group('imagenes')
+    h_im.create_dataset('im',data=imagenes)
 #%%
 imag, splif, splio = [],[],[]
 with h5py.File('estadistica.hdf5', 'r') as f:
