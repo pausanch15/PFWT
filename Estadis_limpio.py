@@ -2,19 +2,18 @@
 #Esta vez no vamos a crear una lista de n imégenes y despues analizar todas, porque esto llena la memoria. En vez, vamos a crear una imagen, analizarla, después crear otra, analizarla, y así sucesivamente.
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+#import matplotlib.animation as animation
 from scipy.interpolate import splev, splrep, splprep
-from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
-from skimage.util import random_noise
-from skimage.filters import gaussian
+#from skimage.morphology import thin, skeletonize, remove_small_objects, binary_dilation, dilation
+#from skimage.util import random_noise
+#from skimage.filters import gaussian
 import Func_Genera_Fibras_2 as gf
 import Func_Splines as spl
 from time import time
 from scipy import interpolate
-from itertools import permutations
-import pickle
+#from itertools import permutations
 plt.ion()
-
+#%%
 #La función que ordena los splines
 def uQuery(pts,u,steps=100,projection=True): 
 #https://stackoverflow.com/questions/34941799/querying-points-on-a-3d-spline-at-specific-parametric-values-in-python
@@ -61,76 +60,38 @@ def uQuery(pts,u,steps=100,projection=True):
 #%%
 #Empezamos a crear las imágenes y analizarlas
 
-#Con pickle es que me voy a guarda los splines. La forma de guardarlos y traer las cosas en general es esta:
-# data = [las cosas a guardar]
-# with open("archivoaguardar.dat", "wb") as fp:
-    # pickle.dump(data, fp)
-# with open("archivodondeguarde.dat", "rb") as fp:
-    # data = pickle.load(fp)
-
-splines, splineso = open('splines.dat', 'wb'), open('splines.dat', 'wb')
-
-with open("splines.dat", "wb") as sp, open("splineso.dat", "wb") as spo:
-    n_int = 1
-    n_fib = 1000
-    imagenes, fibras = [], []
-    splines, splineso = [], []
-    curvs, fibras, tttr, brrr = [],[],[],[]
-    np.random.seed(12)
-    t1 = time()
-    for i in range(n_fib):
-    #    mcu = 10
-    #    repe = 0
-    #    while (mcu > 1.5) and (repe < 10):
-        im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=150)
-    #        mcu = max_curv(sss[0])
-    #        repe += 1
-        imagenes.append(im[0])
-        splineso.append(sss[0])
-
-        #Guardo con pickle:
-        pickle.dump(sss[0], spo)
-        
-    #    if i ==26: continue
-        if i%10 == 0: print(i,end=' ')
-        fibrass,bbs = spl.encuentra_fibra(im,binariza=50)
-        fibra,bb = fibrass[0], bbs[0]
-        fibras.append(fibra)
-        tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
-        tramos = spl.ordenar_fibra(tramos)
-        tttr.append(tramos)
-        brrr.append(bordes)
-        try:
-            curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
-            splines.append(spline)
-
-            #Guardo con pickle:
-            pickle.dump(spline, sp)
-            
-            curvs.append(curv)
-            del(curv,spline)
-        except UnboundLocalError:
-            splines.append('Nan')
-            curvs.append('Nan')
-            print('\n',i)
-        del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
-    t2 = time()
-    print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')    
-
-#Levanto las cosas que guardé con pickle
-s = [] #lista de splines recuperados
-so = [] #lista de splines originales
-with open("splines.dat", "rb") as sp, open("splineso.dat", "rb") as spo:
+n_int = 1
+n_fib = 1000
+imagenes, fibras = [], []
+splines, splineso = [], []
+curvs, fibras, tttr, brrr = [],[],[],[]
+np.random.seed(12)
+t1 = time()
+for i in range(n_fib):
+    im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=150)
+    imagenes.append(im[0])
+    splineso.append(sss[0])    
+#    if i ==26: continue
+    if i%10 == 0: print(i,end=' ')
+    fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
+    fibra,bb = fibrass[0], bbs[0]
+    fibras.append(fibra)
+    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+    tramos = spl.ordenar_fibra(tramos)
+    tttr.append(tramos)
+    brrr.append(bordes)
     try:
-            while True:
-                spli = pickle.load(sp)
-                splio = pickle.load(spo)
-                s.append(spli)
-                so.append(splio)
-    except EOFError:
-        pass
-
-
+        curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
+        splines.append(spline)        
+        curvs.append(curv)
+        del(curv,spline)
+    except UnboundLocalError:
+        splines.append('Nan')
+        curvs.append('Nan')
+        print('\n',i)
+    del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
+t2 = time()
+print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')    
 #%%
 ff = 960 #5 14 15 111 214 248 285 313 383 404 500 521 571 703 733 755 960 
 #sacar: 112,479,541,624,673
@@ -171,14 +132,8 @@ for i in range(len(fibras)):
     if i in [112,479,541,624,673,782]: continue
     if i in [5,14,15,111,214,248,285,313,383,404,500,521,571,703,733,755,960]: continue #estan bien, los saco para ver
 #    print(i)
-    #Comento estas líneas para probar de hacer lo mismo con los splines guardados en archivos
-    # xf,yf = splev(t_spl,splines[i])
-    # yo,xo = splev(t_spl,splineso[i])
-
-    #Pruebo con los splines guardados en archivos
-    xf,yf = splev(t_spl,s[i])
-    yo,xo = splev(t_spl,so[i])
-    
+    xf,yf = splev(t_spl,splines[i])
+    yo,xo = splev(t_spl,splineso[i])
     xf,yf,z = uQuery([xf,yf],u,steps).T
     xo,yo,z = uQuery([xo,yo],u,steps).T
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
