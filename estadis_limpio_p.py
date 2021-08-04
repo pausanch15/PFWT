@@ -14,7 +14,7 @@ from scipy import interpolate
 from itertools import permutations
 import pickle
 plt.ion()
-
+#%%
 #La función que ordena los splines
 def uQuery(pts,u,steps=100,projection=True): 
     u = np.clip(u,0,1) 
@@ -49,7 +49,7 @@ def curvatura_pap(x,y):
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / \
                  ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
     return curv 
-
+#%%
 #Empezamos a crear las imágenes y analizarlas
 
 # data = [las cosas a guardar]
@@ -150,7 +150,7 @@ for i in range(len(fibras)):
     del(xf,xo,yo,yf,z)
 tf = time()
 print(f'Tarda {tf-ti} segundos en evaluar los splines originales y recuperados de {n_fib} imagenes.')
-
+#%%
 # # Hacemos los histogramas
 # ti = time()
 # histx, limx = np.histogram(dx, bins='auto')
