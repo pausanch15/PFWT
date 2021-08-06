@@ -9,6 +9,7 @@ import Func_Genera_Fibras_2 as gf
 import Func_Splines as spl
 from time import time
 from scipy import interpolate
+import scipy.stats as sps
 #from itertools import permutations
 import h5py 
 plt.ion()
@@ -57,10 +58,19 @@ def uQuery(pts,u,steps=100,projection=True):
     # Else, modulate parametric samples and and pass back to splev
     mod = (((u-s[i0])/(s[i1]-s[i0]))/steps)+samples[i0]
     return np.array(interpolate.splev(mod,tck)).T  
+
+#La función que calcula la curvatura
+def curvatura_pap(x,y):
+    splin, u = splprep([x,y],s=0)
+    spline_1d = splev(u,splin,der=1)
+    spline_2d = splev(u,splin,der=2)
+    curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / \
+                 ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
+    return curv 
 #%%
 #Empezamos a crear las imágenes y analizarlas
 n_int = 1
-n_fib = 100
+n_fib = 3000
 imagenes, fibras = [], []
 splines, splineso = [], []
 curvs, fibras, tttr, brrr = [],[],[],[]
@@ -70,7 +80,7 @@ for i in range(n_fib):
 #    mcu = 10
 #    repe = 0
 #    while (mcu > 1.5) and (repe < 10):
-    im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=150)
+    im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
 #        mcu = max_curv(sss[0])
 #        repe += 1
     imagenes.append(im[0])
@@ -136,14 +146,14 @@ with h5py.File('splines.hdf5', 'w') as f:
     h_splo.create_dataset('lista_splo_c2',data=c2o)
     h_splo.create_dataset('lista_splo_k',data=ko)
     
-with h5py.File('imagenes.hdf5', 'w') as f:
-    h_im = f.create_group('imagenes')
-    h_im.create_dataset('im',data=imagenes)
+#with h5py.File('imagenes.hdf5', 'w') as f:
+#    h_im = f.create_group('imagenes')
+#    h_im.create_dataset('im',data=imagenes)
 #%%
 imag, splif, splio = [],[],[]
-with h5py.File('estadistica.hdf5', 'r') as f:
-    gim = f.get('imagenes')
-    im_h = gim['lista_im']
+with h5py.File('splines.hdf5', 'r') as f:
+#    gim = f.get('imagenes')
+#    im_h = gim['lista_im']
     
     gspf = f.get('splines_recons')
     tf_h, kf_h = gspf['lista_splf_t'], gspf['lista_splf_k']
@@ -153,18 +163,18 @@ with h5py.File('estadistica.hdf5', 'r') as f:
     to_h, ko_h = gspo['lista_splo_t'], gspo['lista_splo_k']
     c1o_h, c2o_h = gspo['lista_splo_c1'], gspo['lista_splo_c2'] 
     
-    for i in range(len(im_h)):
-        imag.append(im_h[i])
+    for i in range(len(tf_h)):
+#        imag.append(im_h[i])
         splif.append([tf_h[i],[c1f_h[i],c2f_h[i]],kf_h[i]])
         splio.append([to_h[i],[c1o_h[i],c2o_h[i]],ko_h[i]])
 #%%
-ff = 960 #5 14 15 111 214 248 285 313 383 404 500 521 571 703 733 755 960 
-#sacar: 112,479,541,624,673
-#revisar: 782 (pego mal, nose porque)
+ff = 24 #535 616 1006 1361 2045 2089 2421 2510 2807 2811
+#+10: 535 616 1006 1361 2045 2089 2421 2510 2807 2811
+#+5: 466 640 1220 1324 1586 1788 1881 1937 2163 2507 2553 2604 2662 2755 2831
 
 t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, splines[ff])
-yo, xo = splev(t_spl, splineso[ff])
+xf, yf = splev(t_spl, splif[ff])
+yo, xo = splev(t_spl, splio[ff])
 #curv = gf.curva(xo,yo)
 #print(curv)
 
@@ -178,15 +188,6 @@ plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(yf-yo[::1], 'g-')
 plt.show()
 #%%
-#La función que calcula la curvatura
-def curvatura_pap(x,y):
-    splin, u = splprep([x,y],s=0)
-    spline_1d = splev(u,splin,der=1)
-    spline_2d = splev(u,splin,der=2)
-    curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / \
-                 ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
-    return curv 
-#%%
 #Ahora evaluamos los splines originales y los obtenidos en un mismo array de puntos, para poder comparar las distancias entre los x y lo y y las curvaturas. Siempre comparamos original vs recuperado.
 t1 = time()
 u = np.linspace(0,1,1000)
@@ -194,11 +195,11 @@ steps = 50000
 dx, dy, curv = [], [], []
 t_spl = np.linspace(0,1,10000)
 for i in range(len(fibras)):
-    if i in [112,479,541,624,673,782]: continue
-    if i in [5,14,15,111,214,248,285,313,383,404,500,521,571,703,733,755,960]: continue #estan bien, los saco para ver
+    if i in [535,616,1006,1361,2045,2089,2421,2510,2807,2811]: continue
+    if i in [466,640,1220,1324,1586,1788,1881,1937,2163,2507,2553,2604,2662,2755,2831]: continue 
 #    print(i)
-    xf,yf = splev(t_spl,splines[i])
-    yo,xo = splev(t_spl,splineso[i])
+    xf,yf = splev(t_spl,splif[i])
+    yo,xo = splev(t_spl,splio[i])
     xf,yf,z = uQuery([xf,yf],u,steps).T
     xo,yo,z = uQuery([xo,yo],u,steps).T
     if np.max(np.abs(xf-xo)) > 20 or np.max(np.abs(yf-yo)) > 20:
@@ -210,24 +211,68 @@ for i in range(len(fibras)):
     if np.max(np.abs(yf-yo)) > minn or np.max(np.abs(xf-xo)) > minn: print(i,end=' ')
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
-    curv = curv+ list(curvf-curvo)
+    cmin = 0.5
+    cr = (curvf-curvo)/np.abs(curvo+curvf)
+    curv = curv+ list(cr)
+#    if np.abs(np.max(cr)) > cmin: print(i,end=' ')
     del(xf,xo,yo,yf,z)
 t2 = time()
-print(f'Tarda {t2-t1} segundos en evaluar los splines originales y recuperados de {n_fib} imagenes.')
+print(f'\nTarda {t2-t1} segundos en evaluar los splines originales y recuperados de {n_fib} imagenes.')
 
 #%%
+dx_m,dx_s = np.mean(dx),np.std(dx)
+dy_m,dy_s = np.mean(dy),np.std(dy)
+cu_m,cu_s = np.mean(curv),np.std(curv)
+
+wx = np.linspace(np.min(dx),np.max(dx),10000)
+wy = np.linspace(np.min(dy),np.max(dy),10000)
 #Hacemos los histogramas
 plt.figure()
-plt.hist(dx, bins=50, color='blue', label='x', alpha=0.5, density=True, stacked=True)
-plt.hist(dy, bins=50, color='red', label='y', alpha=0.5, density=True, stacked=True)
+gx = np.exp( -1/(2 * dx_s**2) * (wx-dx_m)**2 ) *1.6 #/ (dx_s * np.sqrt(2*np.pi))
+plt.hist(dx, bins=100, color='blue', label='x', alpha=0.5, density=True)
+plt.plot(wx,gx,'-')
+gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
+plt.hist(dy, bins=100, color='red', label='y', alpha=0.5, density=True)
+plt.plot(wy,gy,'-')
+
+#x = np.linspace(-4,4,1000)
+#gaus = np.exp( -1/(2*0.7209708359440692**2) * (x+0.29839801285882667)**2 ) * 0.55
+#plt.plot(x,gaus,'-.')
 plt.legend()
 plt.show()
 
 plt.figure()
-plt.hist(curv,bins=200,density=True, stacked=True)
+plt.hist(curv,bins=500,density=True) #, stacked=True)
 plt.title('curvatura')
+x = np.linspace(-1,1,1000)
+gaus = np.exp( -1/(2*cu_s**2) * (x-cu_m)**2 ) * 8.1 #/ (cu_s * np.sqrt(2*np.pi))
+plt.plot(x,gaus,'-.')
 plt.show()
+
+
+#plt.figure()
+#plt.hist(np.abs(curv),bins=500,density=True, stacked=True)
+#plt.title('curvatura')
+#plt.show()
 
 print(f'Para la diferencia en x, la media es de {np.mean(dx)} y el desvío {np.std(dx)}.')
 print(f'Para la diferencia en y, la media es de {np.mean(dy)} y el desvío {np.std(dy)}.')
 print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
+#%%
+#est_x, pv_x = sps.kstest(dx, 'norm',args=(dx_m,dx_s))
+print(sps.kstest(dx, 'norm',args=(dx_m,dx_s)))
+#est_y, pv_y = sps.kstest(dy, 'norm',args=(dy_m,dy_s))
+print(sps.kstest(dy, 'norm',args=(dy_m,dy_s)))
+#print(est_x, pv_x, est_y, pv_y)
+
+#%%
+mu,sig = 0 ,10
+varl = sps.norm.rvs(mu,sig,size=10000)
+plt.figure()
+w = np.linspace(np.min(varl),np.max(varl),10000)
+g = np.exp( -1/(2 * sig**2) * (w-mu)**2 ) / (sig * np.sqrt(2*np.pi))
+plt.hist(varl,bins=50,density=True, stacked=True)
+plt.plot(w,g,'-')
+plt.show()
+print( sps.kstest(varl, 'norm',args=(0,10)) )
+
