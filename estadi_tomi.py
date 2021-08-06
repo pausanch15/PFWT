@@ -77,15 +77,9 @@ curvs, fibras, tttr, brrr = [],[],[],[]
 np.random.seed(12)
 t1 = time()
 for i in range(n_fib):
-#    mcu = 10
-#    repe = 0
-#    while (mcu > 1.5) and (repe < 10):
     im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
-#        mcu = max_curv(sss[0])
-#        repe += 1
     imagenes.append(im[0])
     splineso.append(sss[0])
-#    if i ==26: continue
     if i%10 == 0: print(i,end=' ')
     fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
     fibra,bb = fibrass[0], bbs[0]
@@ -275,4 +269,75 @@ plt.hist(varl,bins=50,density=True, stacked=True)
 plt.plot(w,g,'-')
 plt.show()
 print( sps.kstest(varl, 'norm',args=(0,10)) )
+#%%
+#Para sacar los tiempos
+n_int = 1
+n_fib = 3000
+tg, ta = [],[]
+np.random.seed(12)
+ti = time()
+for i in range(n_fib):
+    t1 = time()
+    im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
+    t2 = time()
+    tg.append(t2-t1)
+    if i%10 == 0: print(i,end=' ')
+    t3 = time()
+    fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
+    fibra,bb = fibrass[0], bbs[0]
+    fibras.append(fibra)
+    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+    tramos = spl.ordenar_fibra(tramos)
+    try:
+        curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
+        t4 = time()
+        ta.append(t4-t3)
+        del(curv,spline)
+    except UnboundLocalError:
+        print('\n',i)
+    del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
+tf = time()
+print(f'\nTarda {tf-ti} segundos en crear y analizar {n_fib} imagenes.')
+#%%
+with h5py.File('tiempo.hdf5', 'w') as f:
+    h_tm = f.create_group('tiempos')
+
+    h_tm.create_dataset('creacion',data=tg)
+    h_tm.create_dataset('analisis',data=ta)
+#%%
+#plt.figure()
+#plt.hist(tg,bins=50,alpha=0.5,label='tg')
+#plt.hist(ta,bins=50,alpha=0.5,label='ta')
+#plt.legend()
+#plt.show()
+#
+#print(f'{np.mean(ta)},{np.std(ta)}')
+#print(f'{np.mean(tg)},{np.std(tg)}')
+
+aes,ges = [],[]
+ast,gst = [],[]
+for j in range(1,1001):
+    a = [np.cumsum(ta[i:i+j])[-1] for i in range(0,len(ta)-j,j)]
+    g = [np.cumsum(tg[i:i+j])[-1] for i in range(0,len(tg)-j,j)]
+    aes.append(np.mean(a))
+    ges.append(np.mean(g))
+    ast.append(np.std(a))
+    gst.append(np.std(g))
+inde = np.linspace(1,1000,1000)
+sla = sps.linregress(inde,y=aes)
+slg = sps.linregress(inde,y=ges)
+print(sla[0],slg[0])
+
+ms = 3
+plt.figure()
+plt.plot(inde,aes,'o',markersize=ms,label='a')
+#plt.errorbar(inde,aes,yerr=ast,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
+plt.plot(inde,sla[0]*inde+sla[1],'-')
+plt.plot(inde,ges,'o',markersize=ms,label='a')
+plt.errorbar(inde,ges,yerr=gst,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
+plt.plot(inde,slg[0]*inde+slg[1],'-')
+plt.legend()
+plt.grid(True)
+plt.show()
+#%%
 
