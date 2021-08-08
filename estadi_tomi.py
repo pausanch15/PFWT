@@ -173,9 +173,9 @@ yo, xo = splev(t_spl, splio[ff])
 #print(curv)
 
 plt.figure()
-plt.set_cmap('gray')
-plt.imshow(imagenes[ff])
-plt.imshow(fibras[ff],cmap='gray_r')
+#plt.set_cmap('gray')
+#plt.imshow(imagenes[ff])
+#plt.imshow(fibras[ff],cmap='gray_r')
 plt.plot(xf, yf, 'r-')
 plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(xf-xo[::1], 'r-')
@@ -188,7 +188,7 @@ u = np.linspace(0,1,1000)
 steps = 50000
 dx, dy, curv = [], [], []
 t_spl = np.linspace(0,1,10000)
-for i in range(len(fibras)):
+for i in range(len(splif)):
     if i in [535,616,1006,1361,2045,2089,2421,2510,2807,2811]: continue
     if i in [466,640,1220,1324,1586,1788,1881,1937,2163,2507,2553,2604,2662,2755,2831]: continue 
 #    print(i)
@@ -211,7 +211,7 @@ for i in range(len(fibras)):
 #    if np.abs(np.max(cr)) > cmin: print(i,end=' ')
     del(xf,xo,yo,yf,z)
 t2 = time()
-print(f'\nTarda {t2-t1} segundos en evaluar los splines originales y recuperados de {n_fib} imagenes.')
+print(f'\nTarda {t2-t1} segundos en evaluar los splines originales y recuperados de {len(splif)} imagenes.')
 
 #%%
 dx_m,dx_s = np.mean(dx),np.std(dx)
@@ -222,11 +222,11 @@ wx = np.linspace(np.min(dx),np.max(dx),10000)
 wy = np.linspace(np.min(dy),np.max(dy),10000)
 #Hacemos los histogramas
 plt.figure()
-gx = np.exp( -1/(2 * dx_s**2) * (wx-dx_m)**2 ) *1.6 #/ (dx_s * np.sqrt(2*np.pi))
-plt.hist(dx, bins=100, color='blue', label='x', alpha=0.5, density=True)
+gx = np.exp( -1/(2 * dx_s**2) * (wx-dx_m)**2 ) / (dx_s * np.sqrt(2*np.pi))
+plt.hist(dx, bins=150, color='blue', label='x', alpha=0.5, density=True)
 plt.plot(wx,gx,'-')
 gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
-plt.hist(dy, bins=100, color='red', label='y', alpha=0.5, density=True)
+plt.hist(dy, bins=150, color='red', label='y', alpha=0.5, density=True)
 plt.plot(wy,gy,'-')
 
 #x = np.linspace(-4,4,1000)
@@ -239,7 +239,7 @@ plt.figure()
 plt.hist(curv,bins=500,density=True) #, stacked=True)
 plt.title('curvatura')
 x = np.linspace(-1,1,1000)
-gaus = np.exp( -1/(2*cu_s**2) * (x-cu_m)**2 ) * 8.1 #/ (cu_s * np.sqrt(2*np.pi))
+gaus = np.exp( -1/(2*cu_s**2) * (x-cu_m)**2 ) / (cu_s * np.sqrt(2*np.pi))
 plt.plot(x,gaus,'-.')
 plt.show()
 
@@ -304,6 +304,14 @@ with h5py.File('tiempo.hdf5', 'w') as f:
 
     h_tm.create_dataset('creacion',data=tg)
     h_tm.create_dataset('analisis',data=ta)
+#%%
+tg, ta = [],[]
+with h5py.File('tiempo.hdf5', 'r') as f:
+    ht = f.get('tiempos')
+    htg, hta = ht['creacion'], ht['analisis']
+    for i in range(len(htg)):
+        tg.append(htg[i])
+        ta.append(hta[i])
 #%%
 #plt.figure()
 #plt.hist(tg,bins=50,alpha=0.5,label='tg')
