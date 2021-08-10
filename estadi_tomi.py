@@ -76,7 +76,7 @@ splines, splineso = [], []
 curvs, fibras, tttr, brrr = [],[],[],[]
 np.random.seed(12)
 t1 = time()
-for i in range(n_fib):
+for i in range(5):
     im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
     imagenes.append(im[0])
     splineso.append(sss[0])
@@ -162,12 +162,12 @@ with h5py.File('splines.hdf5', 'r') as f:
         splif.append([tf_h[i],[c1f_h[i],c2f_h[i]],kf_h[i]])
         splio.append([to_h[i],[c1o_h[i],c2o_h[i]],ko_h[i]])
 #%%
-ff = 24 #535 616 1006 1361 2045 2089 2421 2510 2807 2811
+ff = 4 #535 616 1006 1361 2045 2089 2421 2510 2807 2811
 #+10: 535 616 1006 1361 2045 2089 2421 2510 2807 2811
 #+5: 466 640 1220 1324 1586 1788 1881 1937 2163 2507 2553 2604 2662 2755 2831
 
 t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, splif[ff])
+#xf, yf = splev(t_spl, splif[ff])
 yo, xo = splev(t_spl, splio[ff])
 #curv = gf.curva(xo,yo)
 #print(curv)
@@ -176,7 +176,9 @@ plt.figure()
 #plt.set_cmap('gray')
 #plt.imshow(imagenes[ff])
 #plt.imshow(fibras[ff],cmap='gray_r')
-plt.plot(xf, yf, 'r-')
+#plt.plot(xf, yf, 'r-o')
+for i in range(len(tttr[ff])):
+    plt.plot(tttr[ff][i][:,0],tttr[ff][i][:,1],'r.')
 plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(xf-xo[::1], 'r-')
 #plt.plot(yf-yo[::1], 'g-')
@@ -188,7 +190,8 @@ u = np.linspace(0,1,1000)
 steps = 50000
 dx, dy, curv = [], [], []
 t_spl = np.linspace(0,1,10000)
-for i in range(len(splif)):
+for i in range(1000):
+    if i%100 == 0: print(i,end=' ')
     if i in [535,616,1006,1361,2045,2089,2421,2510,2807,2811]: continue
     if i in [466,640,1220,1324,1586,1788,1881,1937,2163,2507,2553,2604,2662,2755,2831]: continue 
 #    print(i)
@@ -205,6 +208,8 @@ for i in range(len(splif)):
     if np.max(np.abs(yf-yo)) > minn or np.max(np.abs(xf-xo)) > minn: print(i,end=' ')
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
+#    dx.append(np.max(np.abs(xf-xo)))
+#    dy.append(np.max(np.abs(yf-yo)))
     cmin = 0.5
     cr = (curvf-curvo)/np.abs(curvo+curvf)
     curv = curv+ list(cr)
@@ -213,27 +218,45 @@ for i in range(len(splif)):
 t2 = time()
 print(f'\nTarda {t2-t1} segundos en evaluar los splines originales y recuperados de {len(splif)} imagenes.')
 
+
 #%%
 dx_m,dx_s = np.mean(dx),np.std(dx)
 dy_m,dy_s = np.mean(dy),np.std(dy)
 cu_m,cu_s = np.mean(curv),np.std(curv)
 
-wx = np.linspace(np.min(dx),np.max(dx),10000)
+dx_scolas = (np.array(dx)-dx_m)/dx_s
+dxs = dx_scolas[dx_scolas >-2]
+dxs = dxs[dxs<2]
+dxs_m, dxs_s = np.mean(dxs), np.std(dxs)
+
+wx = np.linspace(np.min(dxs),np.max(dxs),10000)
 wy = np.linspace(np.min(dy),np.max(dy),10000)
 #Hacemos los histogramas
 plt.figure()
-gx = np.exp( -1/(2 * dx_s**2) * (wx-dx_m)**2 ) / (dx_s * np.sqrt(2*np.pi))
-plt.hist(dx, bins=150, color='blue', label='x', alpha=0.5, density=True)
+gx = np.exp( -1/(2 * dxs_s**2) * (wx-dxs_m)**2 ) / (dxs_s * np.sqrt(2*np.pi)) 
+plt.hist(dxs, bins=75, color='blue', label='x', alpha=0.5, density=True)
 plt.plot(wx,gx,'-')
-gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
-plt.hist(dy, bins=150, color='red', label='y', alpha=0.5, density=True)
-plt.plot(wy,gy,'-')
+#gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
+#plt.hist(dy, bins=75, color='red', label='y', alpha=0.5, density=True)
+#plt.plot(wy,gy,'-')
+plt.legend()
+plt.show()
+
+print(f'Para la diferencia en x, la media es de {np.mean(dx)} y el desvío {np.std(dx)}.')
+print(f'Para la diferencia en y, la media es de {np.mean(dy)} y el desvío {np.std(dy)}.')
+print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
+#%%
+plt.figure()
+r = np.sqrt(np.array(dx)**2 + np.array(dy)**2)
+plt.hist(r,bins=150)
+plt.show()
+
 
 #x = np.linspace(-4,4,1000)
 #gaus = np.exp( -1/(2*0.7209708359440692**2) * (x+0.29839801285882667)**2 ) * 0.55
 #plt.plot(x,gaus,'-.')
-plt.legend()
-plt.show()
+#plt.legend()
+#plt.show()
 
 plt.figure()
 plt.hist(curv,bins=500,density=True) #, stacked=True)
@@ -249,9 +272,6 @@ plt.show()
 #plt.title('curvatura')
 #plt.show()
 
-print(f'Para la diferencia en x, la media es de {np.mean(dx)} y el desvío {np.std(dx)}.')
-print(f'Para la diferencia en y, la media es de {np.mean(dy)} y el desvío {np.std(dy)}.')
-print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
 #%%
 #est_x, pv_x = sps.kstest(dx, 'norm',args=(dx_m,dx_s))
 print(sps.kstest(dx, 'norm',args=(dx_m,dx_s)))
@@ -339,7 +359,7 @@ print(sla[0],slg[0])
 ms = 3
 plt.figure()
 plt.plot(inde,aes,'o',markersize=ms,label='a')
-#plt.errorbar(inde,aes,yerr=ast,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
+plt.errorbar(inde,aes,yerr=ast,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
 plt.plot(inde,sla[0]*inde+sla[1],'-')
 plt.plot(inde,ges,'o',markersize=ms,label='g')
 plt.errorbar(inde,ges,yerr=gst,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
