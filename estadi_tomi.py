@@ -70,24 +70,25 @@ def curvatura_pap(x,y):
 #%%
 #Empezamos a crear las imágenes y analizarlas
 n_int = 1
-n_fib = 3000
+n_fib = 10000
 imagenes, fibras = [], []
 splines, splineso = [], []
 curvs, fibras, tttr, brrr = [],[],[],[]
 np.random.seed(12)
 t1 = time()
-for i in range(5):
+for i in range(n_fib):
+#    if i < 4000: continue
     im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
     imagenes.append(im[0])
     splineso.append(sss[0])
     if i%10 == 0: print(i,end=' ')
     fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
     fibra,bb = fibrass[0], bbs[0]
-    fibras.append(fibra)
+#    fibras.append(fibra)
     tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
     tramos = spl.ordenar_fibra(tramos)
-    tttr.append(tramos)
-    brrr.append(bordes)
+#    tttr.append(tramos)
+#    brrr.append(bordes)
     try:
         curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
         splines.append(spline)
@@ -97,6 +98,10 @@ for i in range(5):
         splines.append('Nan')
         curvs.append('Nan')
         print('\n',i)
+#    except IndexError: #para cuando no hay bordes
+#        splines.append('Nan')
+#        curvs.append('Nan')
+#        print('\n',i)
     del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
 t2 = time()
 print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')
@@ -168,18 +173,18 @@ ff = 4 #535 616 1006 1361 2045 2089 2421 2510 2807 2811
 
 t_spl = np.linspace(0, 1, 10000)
 #xf, yf = splev(t_spl, splif[ff])
-yo, xo = splev(t_spl, splio[ff])
+#yo, xo = splev(t_spl, splio[ff])
 #curv = gf.curva(xo,yo)
 #print(curv)
 
 plt.figure()
-#plt.set_cmap('gray')
-#plt.imshow(imagenes[ff])
-#plt.imshow(fibras[ff],cmap='gray_r')
+plt.set_cmap('gray')
+plt.imshow(imagenes[-1])
+#plt.imshow(fibras[-1],cmap='gray_r')
 #plt.plot(xf, yf, 'r-o')
-for i in range(len(tttr[ff])):
-    plt.plot(tttr[ff][i][:,0],tttr[ff][i][:,1],'r.')
-plt.plot(xo[::1], yo[::1], 'g-')
+#for i in range(len(tttr[ff])):
+#    plt.plot(tttr[ff][i][:,0],tttr[ff][i][:,1],'r.')
+#plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(xf-xo[::1], 'r-')
 #plt.plot(yf-yo[::1], 'g-')
 plt.show()
@@ -190,7 +195,7 @@ u = np.linspace(0,1,1000)
 steps = 50000
 dx, dy, curv = [], [], []
 t_spl = np.linspace(0,1,10000)
-for i in range(1000):
+for i in range(3000):
     if i%100 == 0: print(i,end=' ')
     if i in [535,616,1006,1361,2045,2089,2421,2510,2807,2811]: continue
     if i in [466,640,1220,1324,1586,1788,1881,1937,2163,2507,2553,2604,2662,2755,2831]: continue 
@@ -208,8 +213,8 @@ for i in range(1000):
     if np.max(np.abs(yf-yo)) > minn or np.max(np.abs(xf-xo)) > minn: print(i,end=' ')
     dx = dx + list(xf-xo)
     dy = dy + list(yf-yo)
-#    dx.append(np.max(np.abs(xf-xo)))
-#    dy.append(np.max(np.abs(yf-yo)))
+#    dx.append(np.mean(xf-xo))
+#    dy.append(np.mean(yf-yo))
     cmin = 0.5
     cr = (curvf-curvo)/np.abs(curvo+curvf)
     curv = curv+ list(cr)
@@ -233,23 +238,29 @@ wx = np.linspace(np.min(dxs),np.max(dxs),10000)
 wy = np.linspace(np.min(dy),np.max(dy),10000)
 #Hacemos los histogramas
 plt.figure()
-gx = np.exp( -1/(2 * dxs_s**2) * (wx-dxs_m)**2 ) / (dxs_s * np.sqrt(2*np.pi)) 
-plt.hist(dxs, bins=75, color='blue', label='x', alpha=0.5, density=True)
-plt.plot(wx,gx,'-')
-#gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
-#plt.hist(dy, bins=75, color='red', label='y', alpha=0.5, density=True)
+plt.title('Diferencias en x')
+gx = np.exp( -1/(2 * dx_s**2) * (wx-dx_m)**2 ) / (dx_s * np.sqrt(2*np.pi)) 
+plt.hist((dx-dx_m)/dx_s, bins=150, color='#eb5600', label='x', density=True,edgecolor='black')
+#plt.plot(wx,gx,'-')
+#plt.legend()
+#plt.savefig('histx.png',bbox_inches='tight')
+plt.show()
+plt.figure()
+plt.title('Diferencias en y')
+gy = np.exp( -1/(2 * dy_s**2) * (wy-dy_m)**2 ) / (dy_s * np.sqrt(2*np.pi))
+plt.hist((dy-dy_m)/dy_s, bins=150, color='#1a9988', label='y',density=True,edgecolor='black')
 #plt.plot(wy,gy,'-')
-plt.legend()
+#plt.legend()
+#plt.savefig('histy.png',bbox_inches='tight')
 plt.show()
 
 print(f'Para la diferencia en x, la media es de {np.mean(dx)} y el desvío {np.std(dx)}.')
 print(f'Para la diferencia en y, la media es de {np.mean(dy)} y el desvío {np.std(dy)}.')
-print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
 #%%
-plt.figure()
-r = np.sqrt(np.array(dx)**2 + np.array(dy)**2)
-plt.hist(r,bins=150)
-plt.show()
+#plt.figure()
+#r = np.sqrt(np.array(dx)**2 + np.array(dy)**2)
+#plt.hist(r,bins=150)
+#plt.show()
 
 
 #x = np.linspace(-4,4,1000)
@@ -259,11 +270,13 @@ plt.show()
 #plt.show()
 
 plt.figure()
-plt.hist(curv,bins=500,density=True) #, stacked=True)
-plt.title('curvatura')
+plt.title('Diferencia en curvatura')
+plt.hist(curv,bins=500,density=True,color='#1a9988',edgecolor='black',linewidth=0.2) #, stacked=True)
+#plt.title('curvatura')
 x = np.linspace(-1,1,1000)
 gaus = np.exp( -1/(2*cu_s**2) * (x-cu_m)**2 ) / (cu_s * np.sqrt(2*np.pi))
-plt.plot(x,gaus,'-.')
+#plt.plot(x,gaus,'-')
+plt.savefig('hist_curvat.png',bbox_inches='tight')
 plt.show()
 
 
@@ -271,7 +284,7 @@ plt.show()
 #plt.hist(np.abs(curv),bins=500,density=True, stacked=True)
 #plt.title('curvatura')
 #plt.show()
-
+print(f'Para la diferencia en la curvatura, la media es de {np.mean(curv)} y el desvío {np.std(curv)}.')
 #%%
 #est_x, pv_x = sps.kstest(dx, 'norm',args=(dx_m,dx_s))
 print(sps.kstest(dx, 'norm',args=(dx_m,dx_s)))
@@ -358,14 +371,59 @@ print(sla[0],slg[0])
 
 ms = 3
 plt.figure()
-plt.plot(inde,aes,'o',markersize=ms,label='a')
-plt.errorbar(inde,aes,yerr=ast,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
-plt.plot(inde,sla[0]*inde+sla[1],'-')
-plt.plot(inde,ges,'o',markersize=ms,label='g')
-plt.errorbar(inde,ges,yerr=gst,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
-plt.plot(inde,slg[0]*inde+slg[1],'-')
-plt.legend()
+plt.plot(inde,aes,'s',markersize=ms,label='a',color='black')
+plt.errorbar(inde,aes,yerr=ast,fmt='.',markersize=0,ecolor='grey',elinewidth=0.2)
+plt.plot(inde,sla[0]*inde+sla[1],'-',color='#eb5600')
+#plt.plot(inde,ges,'o',markersize=ms,label='g')
+#plt.errorbar(inde,ges,yerr=gst,fmt='.',markersize=0,ecolor='black',elinewidth=0.2)
+#plt.plot(inde,slg[0]*inde+slg[1],'-')
+#plt.legend(loc=2)
+plt.xlabel('N° Fibras')
+plt.ylabel('Tiempo (s)')
 plt.grid(True)
+#plt.savefig('tiempos_nar.png',bbox_inches='tight')
 plt.show()
 #%%
+from PIL import Image
+from skimage.morphology import thin, skeletonize, remove_small_objects
+from skimage.measure import label, regionprops
+image = Image.open('imagenprueba.png') 
 
+ima = np.asarray(image) #la convierto en numpy array
+im = ima[:,:,0]
+imc = im[20:-20, 100:800] #me quedo entre las lineas 100 y 800 (quito las turbinas)
+
+fibrass,bbs = spl.encuentra_fibra([imc],binariza=200)
+fibra,bb = fibrass[0], bbs[0]
+tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=False)
+tramoso = spl.ordenar_fibra(tramos)
+curv,spline = spl.pegar_fibra(tramoso,bordes,window=17,s=10)
+
+#bordes: 4,27; 1,142
+#nudos: 165,73; 177,67; 177,68; 176,68; 178,68
+xbs = [27,1]
+ybs = [4,142]
+xns = [165,177,177,176,178]
+yns = [73,67,68,68,68]
+
+t_spl=np.linspace(0,1,10000)
+xf, yf = splev(t_spl, spline)
+plt.figure()
+plt.imshow(imc<200,cmap='gray')
+#plt.plot(xbs,ybs,'ro')
+#plt.plot(xns,yns,'yo')
+plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+plt.savefig('binarizada.png',bbox_inches='tight')
+plt.show()
+#%%
+colori = ['red','green','orange','blue']
+plt.figure()
+for i in range(len(tramoso)):
+    if i == 2: continue
+    x,y = tramoso[i][:,0], tramoso[i][:,1]
+    plt.plot(x,y,'.',color=colori[i])
+    plt.plot(x,y,'-',alpha=0.5,color=colori[i])
+plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+plt.gca().invert_yaxis()
+#plt.savefig('tramos_utiles.png',bbox_inches='tight')
+plt.show()
