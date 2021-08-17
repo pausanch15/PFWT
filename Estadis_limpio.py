@@ -102,7 +102,7 @@ for i in range(n_fib):
 t2 = time()
 print(f'\nTarda {t2-t1} segundos en crear y analizar {n_fib} imagenes.')    
 #%%
-ff = 59
+ff = 0
 #5 14 15 111 193 214 248 251 285 313 383 404 500 521 571 703 733 782 960
 #sacar: 
 #revisar: 782
@@ -110,24 +110,26 @@ ff = 59
 
 # dif en curvatura: 471 641 665 855 
 
-t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, splines[ff])
-yo, xo = splev(t_spl, splineso[ff])
-xf,yf,z = uQuery([xf,yf],u,steps).T
-xo,yo,z = uQuery([xo,yo],u,steps).T
-curvo = gf.curva(xo,yo)
-curvf = gf.curva(xf,yf)
-print(curvo,curvf)
+#t_spl = np.linspace(0, 1, 10000)
+#xf, yf = splev(t_spl, splines[ff])
+#yo, xo = splev(t_spl, splineso[ff])
+#xf,yf,z = uQuery([xf,yf],u,steps).T
+#xo,yo,z = uQuery([xo,yo],u,steps).T
+#curvo = gf.curva(xo,yo)
+#curvf = gf.curva(xf,yf)
+#print(curvo,curvf)
 
 plt.figure()
 plt.set_cmap('gray')
 plt.imshow(imagenes[ff])
-plt.imshow(fibras[ff],cmap='gray_r')
-plt.plot(xf, yf, 'r-')
-plt.plot(xo[::1], yo[::1], 'g-')
+#plt.imshow(fibras[ff],cmap='gray_r')
+#plt.plot(xf, yf, 'r-')
+#plt.plot(xo[::1], yo[::1], 'g-')
 #plt.plot(xf-xo[::1], 'r-')
 #plt.plot(yf-yo[::1], 'g-')
-plt.show()
+#plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+#plt.savefig('im_fibra_generada.png',bbox_inches='tight')
+plt.show()    
 #%%
 #Ahora evaluamos los splines originales y los obtenidos en un mismo array de puntos, para poder comparar las distancias entre los x y lo y y las curvaturas. Siempre comparamos original vs recuperado.
 t1 = time()
