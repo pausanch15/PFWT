@@ -1,4 +1,3 @@
-#Pongo acá las funciones que generan fibras que pasó Pablo y hago que generen imágenes con el ruido como queremos
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
