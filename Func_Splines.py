@@ -10,7 +10,7 @@ from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
 # @profile
-def encuentra_fibra(imagenes, connec=4, binariza=110):
+def encuentra_fibra(imagenes, connec=4, binariza=110, eccen=0.999):
     fibras, bbs = [], []
     for im_n, im in enumerate(imagenes):
         im = np.asarray(im)
@@ -18,7 +18,15 @@ def encuentra_fibra(imagenes, connec=4, binariza=110):
         im = im<binariza 
 #        li = label(im)
         fibra = remove_small_objects(im, connectivity=connec)
-        # li = label(fibra)
+# de aca
+        li = label(fibra)
+        if np.max(li) >= 2:
+            props = regionprops(li)
+            for i in range(np.max(li)):
+                if props[i].eccentricity >= eccen:
+                    lf = i+1
+            fibra = li==lf
+# hasta aca es nuevo, para cuando aparece más de un coso despues de binarizar (datos del labo)    
         prop = regionprops(fibra.astype(int))
         try:
             bb = prop[0].bbox
