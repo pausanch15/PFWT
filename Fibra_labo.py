@@ -70,6 +70,9 @@ for i in range(499):
         mcu.append(np.max(curv))
     except: 
         print('no encontró',i)
+        fib.append('Nan')
+        splines.append('Nan')
+        mcu.append('Nan')
 t2 = time()
 print(t2-t1)
 #%%
@@ -79,21 +82,14 @@ print(t2-t1)
 #    plt.show()
 
 for i in range(len(mcu)):
+    if mcu[i] == 'Nan': continue
     if mcu[i] > 1: 
         print(mcu[i],i)
 #%% 
-#69.38149084434413 14
-#20.445422122623317 56
-#27.61023748054714 60
-#128.40360558937843 210
-#2245.0200864216654 231
-#774.9114561651061 302
-#160.46038903907245 377
-#50.67982197148064 468
-#1018.833598568598 480
-#799.1019092629427 485
-#7421.51010336174 497
-ff = 480
+#8.830121891284316 10
+#329.0416777931968 14
+#67.25263064573389 210
+ff = 210
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
 
@@ -106,7 +102,7 @@ plt.show()
 
 #%%
 #revisar 11
-ff = 232 #361, 427
+ff = 428 #361, 427
 ni = '{:04d}'.format(ff)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0004\ID_0_C1S000400'+ni+'.tif')
 bina = np.mean(ima-im_p) - 2.2 * np.std(ima-im_p) #63
@@ -128,17 +124,54 @@ for i in range(np.max(li)):
         print('cumplio')
 fibra = li==lf           
      
+#plt.figure()
+#plt.imshow(ima-im_p,cmap='gray_r')
+#plt.show()  
 plt.figure()
-plt.imshow(ima-im_p,cmap='gray_r')
+plt.imshow(thin(fibra),cmap='gray_r')
+plt.title('thin')
 plt.show()  
 plt.figure()
-plt.imshow((dilation(fibra)),cmap='gray_r')
+plt.imshow(skeletonize(fibra),cmap='gray_r')
+plt.title('skel')
 plt.show()  
-plt.figure()
-plt.imshow(li,cmap='gray_r')
-plt.show()  
-#%%
 
+#plt.figure()
+#plt.imshow(li,cmap='gray_r')
+#plt.show()  
+#%%
+from skimage.filters import sato
+ff = 1 #361, 427
+ni = '{:04d}'.format(ff)
+ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0004\ID_0_C1S000400'+ni+'.tif')
+bina = np.mean(ima-im_p) - 2.2 * np.std(ima-im_p) #63
+#bina = -75
+im = ima-im_p
+t1 = time()
+sat = sato(im, mode='constant')
+t2 = time()
+print('sato',t2-t1)
+t1 = time()
+sat2 = sato(im[950:,500:700], mode='constant')
+t2 = time()
+print('sato chico',t2-t1)
+
+plt.figure()
+plt.imshow(im[:,:],cmap='gray_r')
+plt.show()  
+plt.figure()
+plt.imshow(sat,cmap='gray_r')
+plt.title('Sato')
+plt.show()  
+plt.figure()
+plt.imshow(sat2,cmap='gray_r')
+plt.title('Sato')
+plt.show()  
+
+#1024x1024: 1.5 seg aprox
+#324x400: 0.17 seg aprox
+#74x200: 0.012 seg aprox
+#%%
 #posibles numeros a ver: convex_area, eccentricity, euler_number, filled_area
 #Pareciera que el numero de euler ( Euler characteristic of region. Computed as number of objects (= 1)
 #    subtracted by number of holes (8-connectivity) ) es siempre 0 o 1,
