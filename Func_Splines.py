@@ -32,7 +32,8 @@ def encuentra_fibra(imagenes, connec=4, binariza=110, eccen=0.999):
             bb = prop[0].bbox
             bbs.append(bb)
             recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
-            fibra_t = thin(recorte)
+#            fibra_t = thin(recorte)
+            fibra_t = skeletonize(recorte)
             # fibra2 = thin(fibra[1:500, 1:500])
             fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
     #        fibras.append(fibra)
