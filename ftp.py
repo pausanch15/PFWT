@@ -112,16 +112,16 @@ if __name__ == "__main__":
     plt.colorbar()
     plt.show()
 #%%
-def dphase_2d(dY0,dY,thx,thy,ns):
+def dphase_2d(dY0,dY,thx,thy,ns,inde=9):
     ny, nx = np.shape(dY)
     
     fY0=np.fft.fft2(dY0)
     fY=np.fft.fft2(dY)
     
-    inde = 9
-    a = np.abs(fY0[inde:int(np.floor(nx/2)),:])
-    imax = np.unravel_index(np.argmax(a, axis=None), a.shape)
-    ifmax_x, ifmax_y = imax[1]+inde, 0
+#    a = np.abs(fY0[inde:int(np.floor(nx/2)),:])
+#    imax = np.unravel_index(np.argmax(a, axis=None), a.shape)
+    imax = np.argmax(np.abs(fY0[0,inde:int(np.floor(nx/2))]))
+    ifmax_x, ifmax_y = imax+inde, 0
     print(ifmax_x, ifmax_y)
                            
     HW_x, HW_y = np.round(ifmax_x*thx), np.round(thy)
@@ -208,13 +208,13 @@ plt.show()
 #ax.set_ylabel('y')
 #plt.show()
 ##
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.plot_wireframe(FX[:,:100], FY[:,:100], gf[:,:100],cmap='jet')
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
-#
+#fig = plt.figure()
+#ax = fig.gca(projection='3d')
+#ax.plot_wireframe(FX[:,:100], FY[:,:100], gf[:,:100],cmap='jet')
+#ax.set_xlabel('x')
+#ax.set_ylabel('y')
+#plt.show()
+##
 #ffi = np.abs(fir) * gf
 #fig = plt.figure()
 #ax = fig.gca(projection='3d')
@@ -235,30 +235,36 @@ for i in range(1,301):
     im_p += ima
 im_p = im_p/300
 #%%
+im_r = np.zeros((1024,1024))
+for i in range(1,299):
+    ni = '{:04d}'.format(i)
+    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0002\ID_0_C1S000200'+ni+'.tif')
+    im_r += ima
+im_r = im_r/298
+#%%
 #im_p = np.zeros((1024,1024))
 #for i in range(1,301):
 #    ni = '{:04d}'.format(i)
 #    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0002\ID_0_C1S000200'+ni+'.tif')
 #    im_p += ima
 #im_p = im_p/300    
-i = 5
-ni = '{:04d}'.format(i)
-imr = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0002\ID_0_C1S000200'+ni+'.tif')
-j = 1504
+
+j = 568
 ni2 = '{:04d}'.format(j)
 im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0001\ID_0_C1S000100'+ni2+'.tif')
 
 plt.figure()
 plt.imshow(im-im_p,cmap='gray')
 plt.show()
+#plt.figure()
+#plt.imshow(im_r-im_p,cmap='gray')
+#plt.colorbar()
+#plt.show()
 plt.figure()
 plt.imshow(im,cmap='gray')
 plt.show()
-#plt.figure()
-#plt.imshow(imr-im_p,cmap='gray')
-#plt.show()
 #%%
-recovered_phase_map = calculate_phase_diff_map_1D(im-im_p, imr-im_p, 0.2, 0.2)
+recovered_phase_map = calculate_phase_diff_map_1D(im-im_p, im_r-im_p, 0.2, 0.2)
 recovered_phase_map = recovered_phase_map - recovered_phase_map[0,0] 
 plt.figure()
 plt.title("recovered phase map")
@@ -267,30 +273,41 @@ plt.colorbar()
 plt.show()
 
 #%%
-dp, gafi, fY0 = dphase_2d(im-im_p, imr-im_p,0.2,510,0.2)
+thx,thy, ns = 0.35, 5, 0.4
+dp, gafi, fY0 = dphase_2d(im-im_p, im_r-im_p,thx,thy,ns,inde=9)
 
 fx = scf.fftfreq(1024)
 fy = scf.fftfreq(1024)
 FX,FY = np.meshgrid(fx,fy)
 #
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.plot_wireframe(FX[:,:100], FY[:,:100], gafi[:,:100],cmap='jet')
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
+#fig = plt.figure()
+#ax = fig.gca(projection='3d')
+#ax.plot_wireframe(FX[:,:100], FY[:,:100], gafi[:,:100],cmap='jet')
+#ax.set_xlabel('x')
+#ax.set_ylabel('y')
+#plt.show()
+#
+#fig = plt.figure()
+#ax = fig.gca(projection='3d')
+#ax.plot_wireframe(FX[:,:100], FY[:,:100], np.abs(fY0[:,:100]))
+#ax.set_xlabel('x')
+#ax.set_ylabel('y')
+#plt.show()
 
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.plot_wireframe(FX[:,:100], FY[:,:100], np.abs(fY0[:,:100]))
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
-
+lim = 10
 plt.figure()
-plt.imshow(dp)
+plt.imshow(dp[lim:-lim,lim:-lim])
 plt.colorbar()
+plt.title('thx={}, thy={}, ns={}'.format(thx,thy,ns))
 plt.show()
+#%%
+n = 0
+plt.figure()
+plt.plot(np.abs(fY0[n,:512]) )
+plt.show()
+a = np.abs(fY0[0,9:512])
+imax = np.argmax(a) + 9
+imax
 #%%
 dp,a,b = dphase_2d(sato(im-im_p,mode='reflect'), sato(imr-im_p,mode='reflect'),0.2,0.2,0.2)
 plt.figure()
