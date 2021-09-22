@@ -22,7 +22,7 @@ plt.show()
 
 #%%
 plt.rc("text", usetex=True)
-plt.figure().set_dpi(150)
+plt.figure()
 plt.plot([324, 297], [427, 566], '.', color='#ffc000', markersize=4, label='Bordes')
 plt.plot([462, 474], [494, 491], '.', color='#70ad47', markersize=4, label='Nudos')
 plt.xticks([])
@@ -32,3 +32,4 @@ plt.colorbar() #para que muestre el rango en el que van los colores
 plt.set_cmap('gray_r') #para que la imagen sea en blanco y negro
 plt.legend()
 plt.show()
+plt.savefig('bordes_nudos.pdf', dpi=300)
