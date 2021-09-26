@@ -1,4 +1,5 @@
 #Trato de hacer el gráfico de cuánto tarda el algoritmo en analizar alguna cantidad de imágenes.
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import splev, splrep, splprep
@@ -9,8 +10,10 @@ from scipy import interpolate
 import pickle
 from scipy.stats import norm
 from scipy import optimize
+from scipy.optimize import curve_fit
 plt.ion()
 
+#%%
 #La función que ordena los splines
 def uQuery(pts,u,steps=100,projection=True): 
     u = np.clip(u,0,1) 
@@ -48,20 +51,21 @@ def curvatura_pap(x,y):
 
 #Empezamos a crear las imágenes y analizarlas     
 n_int = 1
-n_fib = 1000
+n_fib = 3000
 curvs, fibras, tttr, brrr = [],[],[],[]
 tttr, brrr = [],[]
 np.random.seed(12)
 
 t = [0.0]
 n_im = [0]
-
 ti = time()
+
 for i in range(n_fib):
     if i%100 == 0:
         print(f'\nVa por la imagen {i}.')
 
     im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
+    tint = time()
     fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
     fibra,bb = fibrass[0], bbs[0]
     fibras.append(fibra)
@@ -78,15 +82,62 @@ for i in range(n_fib):
         curvs.append('Nan')
         print(f'\nTiró UnboundLocalError: {i}.')
 
-    if i%5 == 0:
-        tf = time()
-        t.append(tf-ti)
-        n_im.append(i)
+    tf = time()
+    t.append(tf-ti)
+    n_im.append(i)
     
-    del(im,sss,fibrass,bbs,fibra,bb,tramos,bordes)
+    del(im, sss, fibrass, bbs, fibra, bb, tramos, bordes)
+
+#Medio al pedo si ya tenía las listas, pero guardo lo obtenido en csv para el futuro
+np.savetxt('tiempos.csv', t, delimiter=',')
+np.savetxt('n_im.csv', n_im, delimiter=',')
 
 plt.plot(t, n_im, 'k.')
 plt.xlabel('Tiempo (s)')
 plt.ylabel('Número de Imágenes')
 plt.grid()
+plt.show()
+
+#%%
+#Levanto los archivos como arrays
+t = np.genfromtxt('tiempos.csv', delimiter=',', dtype=None)
+n_im = np.genfromtxt('n_im.csv', delimiter=',', dtype=None)
+
+#%%
+#Tomo cada tres valores de los array, promedio y saco el desvío
+t_m = []
+t_std = []
+n_im_m = []
+n_im_std = []
+for i in range(len(t)):
+    if t[i*3:(i*3)+3][-1] == t[-1]: break
+    t_m.append(np.mean(t[i*3:(i*3)+3]))
+    t_std.append(np.std(t[i*3:(i*3)+3], ddof=1))
+    n_im_m.append(np.mean(n_im[i*3:(i*3)+3]))
+    n_im_std.append(np.std(n_im[i*3:(i*3)+3], ddof=1))
+
+np.array(t_m)
+np.array(n_im_m)
+np.array(t_std)
+np.array(n_im_std)
+
+#%%
+#Ploteo
+plt.plot(n_im_m, t_m, 'k.')
+plt.ylabel('Tiempos Promediados (s)')
+plt.xlabel('Número de Imágenes Promediados')
+plt.grid()
+plt.show()
+
+#Hago el ajuste
+def recta(x, m, b):
+    return m*x + b
+
+popt, pcov = curve_fit(recta, n_im_prom, t_prom, sigma=t_std)
+
+x = np.linspace(0, np.max(n_im_m), 3000)
+
+plt.plot(n_im_prom, t_prom, 'k.')
+plt.plot(x, recta(x, *popt), 'r--')
+plt.errorbar(n_im_prom, t_prom, yerr=n_im_std, ecolor='gray', fmt='none')
 plt.show()
