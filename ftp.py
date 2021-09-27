@@ -157,7 +157,7 @@ def dphase_2d(dY0,dY,thx,thy,ns,inde=9):
 
 
 #%%
-dp, gf, fyo = dphase_2d(im_def,im_ref,0.5,250,0.2)
+dp, gf, fir = dphase_2d(im_def,im_ref,0.5,250,0.2)
 #dp, gf, fyo, inde2 = dphase_2d_2(im_ref,im_def,0.5,0.2)
 #dph, inde1 = calculate_phase_diff_map_1D(im_def, im_ref, 0.5, 0.2)
 
@@ -194,19 +194,19 @@ plt.show()
 #bx,by = 25,255
 #lx,ly = 25,255
 ##x, y = np.linspace(bx-lx,bx+lx,2*lx+1), np.linspace(by-ly,by+ly,2*ly+1)
-#fx = scf.fftfreq(512)
-#fy = scf.fftfreq(512)
-#FX,FY = np.meshgrid(fx,fy)
+fx = scf.fftfreq(512)
+fy = scf.fftfreq(512)
+FX,FY = np.meshgrid(fx,fy)
 ##
 ##fyt = np.abs(fyo[bx-lx:bx+lx+1,by-ly:by+ly+1])
 ##
-#fig = plt.figure()
-#ax = fig.gca(projection='3d')
-#ax.plot_surface(FX[:,:100], FY[:,:100], np.abs(fir[:,:100]),cmap='jet')
-##ax.plot_surface(X, Y, fyt)
-#ax.set_xlabel('x')
-#ax.set_ylabel('y')
-#plt.show()
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.plot_surface(FX[:,:], FY[:,:], np.abs(fir[:,:]),cmap='jet')
+#ax.plot_surface(X, Y, fyt)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+plt.show()
 ##
 #fig = plt.figure()
 #ax = fig.gca(projection='3d')
@@ -214,7 +214,7 @@ plt.show()
 #ax.set_xlabel('x')
 #ax.set_ylabel('y')
 #plt.show()
-##
+#
 #ffi = np.abs(fir) * gf
 #fig = plt.figure()
 #ax = fig.gca(projection='3d')
@@ -249,17 +249,17 @@ im_r = im_r/298
 #    im_p += ima
 #im_p = im_p/300    
 
-j = 568
+j = 1568
 ni2 = '{:04d}'.format(j)
 im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0001\ID_0_C1S000100'+ni2+'.tif')
 
 plt.figure()
 plt.imshow(im-im_p,cmap='gray')
 plt.show()
-#plt.figure()
-#plt.imshow(im_r-im_p,cmap='gray')
-#plt.colorbar()
-#plt.show()
+plt.figure()
+plt.imshow(im_p,cmap='gray')
+plt.colorbar()
+plt.show()
 plt.figure()
 plt.imshow(im,cmap='gray')
 plt.show()
@@ -273,7 +273,7 @@ plt.colorbar()
 plt.show()
 
 #%%
-thx,thy, ns = 0.35, 5, 0.4
+thx,thy, ns = 0.3, 5, 0.5
 dp, gafi, fY0 = dphase_2d(im-im_p, im_r-im_p,thx,thy,ns,inde=9)
 
 fx = scf.fftfreq(1024)
