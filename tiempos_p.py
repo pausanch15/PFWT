@@ -48,7 +48,7 @@ def curvatura_pap(x,y):
     curv = np.abs(spline_2d[0] * spline_1d[1] - spline_1d[0] * spline_2d[1]) / \
                  ((spline_1d[0])**2 + (spline_1d[1])**2)**(3/2)
     return curv 
-
+#%%
 #Empezamos a crear las imágenes y analizarlas     
 n_int = 1
 n_fib = 3000
@@ -56,8 +56,8 @@ curvs, fibras, tttr, brrr = [],[],[],[]
 tttr, brrr = [],[]
 np.random.seed(12)
 
-t = [0.0]
-n_im = [0]
+t = []
+n_im = []
 ti = time()
 
 for i in range(n_fib):
@@ -65,7 +65,9 @@ for i in range(n_fib):
         print(f'\nVa por la imagen {i}.')
 
     im, sss = gf.genera_im_dinamica(frames=n_int, n_fibras=2, alpha=0.1,N=1000,Nt=8,curvatura=100)
+    
     tint = time()
+    
     fibrass,bbs = spl.encuentra_fibra(im,binariza=70)
     fibra,bb = fibrass[0], bbs[0]
     fibras.append(fibra)
@@ -83,14 +85,14 @@ for i in range(n_fib):
         print(f'\nTiró UnboundLocalError: {i}.')
 
     tf = time()
-    t.append(tf-ti)
+    t.append(tf-tint)
     n_im.append(i)
     
     del(im, sss, fibrass, bbs, fibra, bb, tramos, bordes)
 
 #Medio al pedo si ya tenía las listas, pero guardo lo obtenido en csv para el futuro
-np.savetxt('tiempos.csv', t, delimiter=',')
-np.savetxt('n_im.csv', n_im, delimiter=',')
+dats = np.column_stack((t,n_im))
+np.savetxt('n_im.csv', dats, delimiter=';')
 
 plt.plot(t, n_im, 'k.')
 plt.xlabel('Tiempo (s)')
@@ -109,6 +111,7 @@ t_m = []
 t_std = []
 n_im_m = []
 n_im_std = []
+
 for i in range(len(t)):
     if t[i*3:(i*3)+3][-1] == t[-1]: break
     t_m.append(np.mean(t[i*3:(i*3)+3]))
@@ -141,3 +144,9 @@ plt.plot(n_im_prom, t_prom, 'k.')
 plt.plot(x, recta(x, *popt), 'r--')
 plt.errorbar(n_im_prom, t_prom, yerr=n_im_std, ecolor='gray', fmt='none')
 plt.show()
+#%%
+a = [1,2,3,4]
+b = [10,11,12,13]
+
+c = np.column_stack((a,b))
+c
