@@ -102,33 +102,43 @@ plt.show()
 
 #%%
 #Levanto los archivos como arrays
-t = np.genfromtxt('tiempos.csv', delimiter=',', dtype=None)
-n_im = np.genfromtxt('n_im.csv', delimiter=',', dtype=None)
+dats = np.genfromtxt('n_im.csv', delimiter=';', dtype=None)
 
+#%%
+t,n_im = dats[:,0], dats[:,1]+1
+plt.figure()
+plt.plot(n_im,np.cumsum(t))
+plt.show()
 #%%
 #Tomo cada tres valores de los array, promedio y saco el desvío
 t_m = []
 t_std = []
-n_im_m = []
-n_im_std = []
+#n_im_m = []
+#n_im_std = []
 
-for i in range(len(t)):
-    if t[i*3:(i*3)+3][-1] == t[-1]: break
-    t_m.append(np.mean(t[i*3:(i*3)+3]))
-    t_std.append(np.std(t[i*3:(i*3)+3], ddof=1))
-    n_im_m.append(np.mean(n_im[i*3:(i*3)+3]))
-    n_im_std.append(np.std(n_im[i*3:(i*3)+3], ddof=1))
+for i in range(1,1001):
+    tm = []
+    for j in range(0,3000,i):
+        if len(t[j:j+i]) == i:
+            tm.append( np.sum(t[j:j+i]) )
+    t_m.append( np.mean(tm) )
+    t_std.append( np.std(tm, ddof=1) )
+#    if t[i*3:(i*3)+3][-1] == t[-1]: break
+#    t_m.append(np.mean(t[i*3:(i*3)+3]))
+#    t_std.append(np.std(t[i*3:(i*3)+3], ddof=1))
+#    n_im_m.append(np.mean(n_im[i*3:(i*3)+3]))
+#    n_im_std.append(np.std(n_im[i*3:(i*3)+3], ddof=1))
 
-np.array(t_m)
-np.array(n_im_m)
-np.array(t_std)
-np.array(n_im_std)
-
+#np.array(t_m)
+#np.array(n_im_m)
+#np.array(t_std)
+#np.array(n_im_std)
 #%%
 #Ploteo
-plt.plot(n_im_m, t_m, 'k.')
-plt.ylabel('Tiempos Promediados (s)')
-plt.xlabel('Número de Imágenes Promediados')
+plt.figure()
+plt.plot(n_im[:1000], t_m, 'k.',markersize=0.01)
+plt.ylabel('Tiempo (s)')
+plt.xlabel('Número de Imágenes')
 plt.grid()
 plt.show()
 
@@ -136,17 +146,14 @@ plt.show()
 def recta(x, m, b):
     return m*x + b
 
-popt, pcov = curve_fit(recta, n_im_prom, t_prom, sigma=t_std)
+popt, pcov = curve_fit(recta, n[:1000], t_m, sigma=t_std)
+print(popt, pcov)
 
-x = np.linspace(0, np.max(n_im_m), 3000)
+x = np.linspace(1, 1000, 1000)
 
-plt.plot(n_im_prom, t_prom, 'k.')
+plt.plot(n_im[:1000], t_m, 'k.')
 plt.plot(x, recta(x, *popt), 'r--')
-plt.errorbar(n_im_prom, t_prom, yerr=n_im_std, ecolor='gray', fmt='none')
+plt.errorbar(n_im[:1000], t_m, yerr=t_std, ecolor='gray', fmt='none')
+plt.savefig('timepos.png',bbox_inches='tight')
 plt.show()
 #%%
-a = [1,2,3,4]
-b = [10,11,12,13]
-
-c = np.column_stack((a,b))
-c
