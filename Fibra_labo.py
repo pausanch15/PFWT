@@ -41,7 +41,7 @@ plt.figure()
 plt.imshow(imags[ff]-im_p,cmap='gray_r')
 plt.show()
 plt.figure()
-plt.imshow(imags[ff],cmap='gray_r')
+plt.imshow(imags[ff],cmap='gray')
 plt.show()
 bina = np.mean(imags[ff]-im_p) - 63
 print(bina, np.mean(imags[ff]-im_p), np.std(imags[ff]-im_p))
@@ -52,6 +52,39 @@ plt.show()
 plt.figure()
 plt.imshow((imags[ff])<390,cmap='gray_r')
 plt.show()             
+#%%
+from skimage import filters
+n = 500
+per_gr = im_p[n,:]
+ff =498
+per_fi = imags[ff][n,:]
+
+#plt.figure()
+#plt.plot(per_gr,'r-')
+#plt.plot(per_fi,'b-')
+#plt.show()
+
+ni = '{:04d}'.format(26)
+ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0003\ID_0_C1S000300'+ni+'.tif')
+plt.figure()
+plt.imshow(ima,cmap='gray')
+plt.clim((0,1024))
+plt.colorbar()
+plt.show()
+plt.figure()
+plt.imshow(imags[ff],cmap='gray')
+plt.clim((0,1024))
+plt.colorbar()
+plt.show()
+ima = np.array(ima,dtype='float64')
+imag = np.array(imags[ff],dtype='float64')
+plt.figure()
+plt.imshow(filters.sato(imag-ima),cmap='gray_r')
+#plt.clim((-200,200))
+plt.colorbar()
+plt.show()
+
+
 #%%
 fib, splines = [],[]
 mcu = []
@@ -95,7 +128,7 @@ for i in range(len(mcu)):
 #8.830121891284316 10
 #329.0416777931968 14
 #67.25263064573389 210
-ff = 14
+ff = 356
 t_spl = np.linspace(0, 1, 10000)
 xf, yf = splev(t_spl, splines[ff])
 
@@ -108,37 +141,37 @@ plt.show()
 
 #%%
 #revisar 11
-ff = 1568 #361, 427
+ff = 361 #361, 427
 ni = '{:04d}'.format(ff)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0004\ID_0_C1S000400'+ni+'.tif')
 bina = np.mean(ima-im_p) - 2.2 * np.std(ima-im_p) #63
 #bina = -75
 print(bina, np.mean(ima-im_p), np.std(ima-im_p))
-#im = (ima-im_p)<bina
+im = (ima-im_p)<bina
      
-#fibra = remove_small_objects(im, connectivity=1)
-#li = label(fibra)
-#print('Area\t BBox_area\t Eccentricity\t Euler_number\t Area_coef\t i')
-#prop = regionprops(li)
-#for i in range(np.max(li)):
-#    ar, ba, ec = prop[i].area, prop[i].bbox_area, prop[i].eccentricity
-#    en, fa, bar = prop[i].euler_number, prop[i].filled_area, ba/ar
-#    print('{:<8d} {:<15d} {:<15f} {:<15d} {:<15f} {:<1d}'.format(ar, ba, ec,en,bar,i+1))
-##    if prop[i].area > 50 and prop[i].area < 1000:
-#    if ec >= 0.998:
-#        lf = i+1
-#        print('cumplio')
-#fibra = li==lf     
-fibrass,bbs = spl.encuentra_fibra([ima-im_p],binariza=bina,connec=0,eccen=0.998)
-try:
-    fibra,bb = fibrass[0], bbs[0]
-    fib.append(fibra)    
-    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=True)
-    tramos = spl.ordenar_fibra(tramos)
-    curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
-except: print('Hola')
-t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, spline)
+fibra = remove_small_objects(im, connectivity=1)
+li = label(fibra)
+print('Area\t BBox_area\t Eccentricity\t Euler_number\t Area_coef\t i')
+prop = regionprops(li)
+for i in range(np.max(li)):
+    ar, ba, ec = prop[i].area, prop[i].bbox_area, prop[i].eccentricity
+    en, fa, bar = prop[i].euler_number, prop[i].filled_area, ba/ar
+    print('{:<8d} {:<15d} {:<15f} {:<15d} {:<15f} {:<1d}'.format(ar, ba, ec,en,bar,i+1))
+#    if prop[i].area > 50 and prop[i].area < 1000:
+    if ec >= 0.998:
+        lf = i+1
+        print('cumplio')
+fibra = li==lf     
+#fibrass,bbs = spl.encuentra_fibra([ima-im_p],binariza=bina,connec=0,eccen=0.998)
+#try:
+#    fibra,bb = fibrass[0], bbs[0]
+#    fib.append(fibra)    
+#    tramos,bordes = spl.cortar_fibra_rap(fibra,bb,cortar_ruido=True)
+#    tramos = spl.ordenar_fibra(tramos)
+#    curv,spline = spl.pegar_fibra(tramos,bordes,window=17,s=10)
+#except: print('Hola')
+#t_spl = np.linspace(0, 1, 10000)
+#xf, yf = splev(t_spl, spline)
 
      
 plt.figure()
