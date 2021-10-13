@@ -168,6 +168,7 @@ dp, gf, fir = dphase_2d(im_def,im_ref,0.5,250,0.2)
 #plt.colorbar()
 #plt.show()
 
+
 plt.figure()
 plt.imshow(phase_imposed)
 plt.title("phase imposed (ground truth)")
@@ -232,6 +233,7 @@ im_p = np.zeros((1024,1024))
 for i in range(1,301):
     ni = '{:04d}'.format(i)
     ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0003\ID_0_C1S000300'+ni+'.tif')
+    ima = np.array(ima,dtype='float64')
     im_p += ima
 im_p = im_p/300
 #%%
@@ -239,6 +241,7 @@ im_r = np.zeros((1024,1024))
 for i in range(1,299):
     ni = '{:04d}'.format(i)
     ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\ID_0_C1S0002\ID_0_C1S000200'+ni+'.tif')
+    ima = np.array(ima,dtype='float64')
     im_r += ima
 im_r = im_r/298
 #%%
@@ -255,14 +258,18 @@ im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\I
 
 plt.figure()
 plt.imshow(im-im_p,cmap='gray')
+#plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+#plt.savefig('ftp_def.png',bbox_inches='tight')
 plt.show()
 plt.figure()
-plt.imshow(im_p,cmap='gray')
+plt.imshow(im_r-im_p,cmap='gray')
+#plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+#plt.savefig('ftp_ref.png',bbox_inches='tight')
 plt.colorbar()
 plt.show()
-plt.figure()
-plt.imshow(im,cmap='gray')
-plt.show()
+#plt.figure()
+#plt.imshow(im,cmap='gray')
+#plt.show()
 #%%
 recovered_phase_map = calculate_phase_diff_map_1D(im-im_p, im_r-im_p, 0.2, 0.2)
 recovered_phase_map = recovered_phase_map - recovered_phase_map[0,0] 
@@ -273,7 +280,7 @@ plt.colorbar()
 plt.show()
 
 #%%
-thx,thy, ns = 0.3, 5, 0.5
+thx,thy, ns = 0.5, 70, 0.5
 dp, gafi, fY0 = dphase_2d(im-im_p, im_r-im_p,thx,thy,ns,inde=9)
 
 fx = scf.fftfreq(1024)
@@ -281,10 +288,13 @@ fy = scf.fftfreq(1024)
 FX,FY = np.meshgrid(fx,fy)
 #
 #fig = plt.figure()
-#ax = fig.gca(projection='3d')
-#ax.plot_wireframe(FX[:,:100], FY[:,:100], gafi[:,:100],cmap='jet')
-#ax.set_xlabel('x')
-#ax.set_ylabel('y')
+##ax = fig.gca(projection='3d')
+##ax.plot_wireframe(FX[:,:100], FY[:,:100], gafi[:,:100],cmap='jet')
+##ax.set_xlabel('x')
+##ax.set_ylabel('y')
+##ax.set_zscale('log')
+##plt.imshow(np.log(np.abs(gafi)))
+#plt.plot(gafi[0,:]*1e7)
 #plt.show()
 #
 #fig = plt.figure()
@@ -292,13 +302,18 @@ FX,FY = np.meshgrid(fx,fy)
 #ax.plot_wireframe(FX[:,:100], FY[:,:100], np.abs(fY0[:,:100]))
 #ax.set_xlabel('x')
 #ax.set_ylabel('y')
+#ax.set_zscale('log')
+#plt.imshow(np.log(np.abs(fY0)))
+#plt.plot(np.abs(fY0[0,:]))
 #plt.show()
 
 lim = 10
 plt.figure()
 plt.imshow(dp[lim:-lim,lim:-lim])
 plt.colorbar()
-plt.title('thx={}, thy={}, ns={}'.format(thx,thy,ns))
+#plt.title('thx={}, thy={}, ns={}'.format(thx,thy,ns))
+plt.tick_params(left = False, right = False , labelleft = False , labelbottom = False, bottom = False)
+plt.savefig('ftp_res.png',bbox_inches='tight')
 plt.show()
 #%%
 n = 0
