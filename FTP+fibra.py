@@ -83,7 +83,7 @@ plt.colorbar()
 plt.show()
 #%%
 #en FTP_fibra hay 3072 imagenes
-num = 135
+num = 165 #568, 165
 ni = '{:04d}'.format(num)
 im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\FTP_fibra\ID_0_C1S000500'+ni+'.tif')
 
@@ -96,13 +96,92 @@ plt.imshow(im-gris,cmap='gray')
 plt.colorbar()
 plt.show()
 #%%
+from skimage.filters import laplace, sobel, threshold_local
+from skimage.morphology import thin, skeletonize, remove_small_objects, dilation, binary_erosion
+from skimage.measure import label, regionprops
+
+lin = 380
+iml = im[380,:]
+img = gris[380,:]
+#imlg = img[380]
+#plt.figure()
+#plt.plot(iml,'-o')
+#plt.plot(img*0.8)
+#plt.show()
+#plt.figure()
+#plt.imshow(im-0.8*gris)
+#plt.show()
+imlap = sobel(laplace(im-0.8*gris,ksize=3),mode='wrap')
+
+plt.figure()
+plt.imshow(imlap,cmap='coolwarm')
+plt.colorbar()
+plt.show()
+#%%
+#plt.figure()
+#plt.imshow(imlap>np.mean(imlap)+2*np.std(imlap))
+##plt.colorbar()
+#plt.show()
+
+print(np.mean(imlap), np.std(imlap))
+
+imb = imlap>np.mean(imlap)+2*np.std(imlap)
+
+fibra = remove_small_objects(imb, connectivity=0)
+
+bor = 5
+li = label(fibra[bor:-bor,bor:-bor])
+print(np.max(li))
+
+#fib_s = skeletonize(dilation(li))
+#prop = regionprops(li)
+#bb = prop[0].bbox
+#recorte = li[bb[0]:bb[2], bb[1]:bb[3]]
+
+
+fib_s = binary_erosion(dilation(li))
+
+#im_nofib = im[bor:-bor,bor:-bor] 
+#im_nofib = im_nofib * (1-fib_s)
+
+plt.figure()
+plt.imshow(fib_s)
+#plt.colorbar()
+plt.show()
+
+#plt.figure()
+#plt.imshow(im)
+#plt.colorbar()
+#plt.show()
+
+
+#imla = imlap.flatten()
+#im_s = imla[imla<200]
+#plt.figure()
+#plt.hist(im_s,bins=100)
+#plt.show()
+#%%
+imr = im[bor:-bor,bor:-bor] 
+im_nofib = imr * (1-fib_s) + np.mean(imr) * fib_s
+refr = ref[bor:-bor,bor:-bor]                   
+ref_nofib = refr * (1-fib_s) + np.mean(refr) * fib_s
+print(np.shape(im_nofib),np.shape(imr),np.shape(fib_s))
+plt.figure()
+plt.imshow(im_nofib)
+#plt.colorbar()
+plt.show()
+plt.figure()
+plt.imshow(ref_nofib)
+#plt.colorbar()
+plt.show()
+#%%
 #FTP, donde esta la fibra se ve medio raro
 thx,thy, ns = 0.5, 80, 0.5
-dp, fY0, gf = dphase_2d(im-gris, ref-gris,thx,thy,ns,inde=9)
+dp, fY0, gf = dphase_2d(im_nofib-gris[bor:-bor,bor:-bor] , ref_nofib-gris[bor:-bor,bor:-bor] ,thx,thy,ns,inde=9)
 
 lim = 10
 plt.figure()
-plt.imshow(dp[lim:-lim,lim:-lim])
+plt.imshow(dp[lim:-lim,lim:-lim]*(1-fib_s[lim:-lim,lim:-lim]))
 plt.title('thx={}, thy={}, ns={}'.format(thx,thy,ns))
 plt.colorbar()
 plt.show()
