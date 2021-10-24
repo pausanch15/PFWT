@@ -112,37 +112,28 @@ plt.figure()
 plt.imshow(im-0.8*gris)
 plt.show()
 #%%
-def rec_fibra(imagenes,gris,connec=0,std_mul=2.2):
-    fibras, bbs = [], []
+def rec_fibra(ima,gris,connec=0,std_mul=2.46):
     griss = np.asarray(gris)
-    for im_n, im in enumerate(imagenes):
-        im = np.asarray(im)
-        imlap = sobel(laplace(im-0.8*griss,ksize=3),mode='wrap')
-        binariza = np.mean(imlap)+std_mul*np.std(imlap)
-        print(np.mean(imlap),np.std(imlap), binariza)
-        imb = imlap>binariza
-        bor = 5
-        fibra = remove_small_objects(imb[bor:-bor,bor:-bor], connectivity=0)
-#        li = label(fibra)
+    im = np.asarray(ima)
+    imlap = sobel(laplace(im-0.8*griss,ksize=3),mode='wrap')
+    binariza = np.mean(imlap) + std_mul*np.std(imlap)
+    print(np.mean(imlap),np.std(imlap), binariza)
+    imb = imlap>binariza
+    bor = 5
+    fibra = remove_small_objects(imb[bor:-bor,bor:-bor], connectivity=connec)
+#    li = label(fibra)
 # hasta aca es nuevo, para cuando aparece más de un coso despues de binarizar (datos del labo)    
-        prop = regionprops(fibra.astype(int))
-        try:
-            bb = prop[0].bbox
-            bbs.append(np.array(bb)+bor)
-            recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
-            fibra_t = binary_erosion(dilation(recorte))
-#            fibra_t = binary_erosion(dilation(recorte))#recorte
-#            fibra_t = skeletonize(recorte)
-            # fibra2 = thin(fibra[1:500, 1:500])
-#            fibra[bb[0]:bb[2], bb[1]:bb[3]] = fibra_t
-    #        fibras.append(fibra)
-            fibras.append(fibra_t)
-        except:
-            print(f'Falló en la imagen {im_n}')
-#            print(prop)
-#            print()
-            pass
-    return fibras, bbs
+    prop = regionprops(fibra.astype(int))
+    try:
+        bb = prop[0].bbox
+        recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
+        fibra_e = binary_erosion(dilation(recorte))
+        fibra_t = thin(fibra_e)
+#        fibra_t = skeletonize(fibra_e)
+    except:
+        print('Falló')
+        pass
+    return fibra_t, np.array(bb)+bor, fibra_e
 #%%
 num = 166 #568, 165, 444, 569, 3070
 ni = '{:04d}'.format(num)
@@ -209,7 +200,10 @@ from generarD import generarD
 from fouriercont2D_comp import fouriercont2D_comp
 
 
-imnr = imn[300:450, 200:350]
+bb1,bb2 = int((bb[0][0]+bb[0][2])/2), int((bb[0][1]+bb[0][3])/2)
+vent = 75
+b1,b2,b3,b4 = bb1-vent,bb1+vent,bb2-vent,bb2+vent
+imnr = imn[b1:b2, b3:b4]
 def_hole = imnr
 Lx, Ly = np.shape(def_hole)
 #Lx, Ly = np.shape(def_hole)
@@ -220,10 +214,10 @@ d1,d2 = np.shape(def_hole)
 plt.figure()
 plt.imshow(def_hole)
 plt.show()
-print(np.shape(imn))
+print(np.shape(def_hole))
 #print('paso carga')
 # Determinacion de Mx y My
-
+#%%
 k=np.arange(0,(Lx)/2)/(Lx)
 kxs=np.zeros(Lx)
 
@@ -232,7 +226,7 @@ for ii in range (0,Lx):
     P2=np.abs(fftdefx/Lx)
     # forzamos cero en componente DC
     P2[0] = 0
-    P1=P2[0:int(np.floor(Lx/2+1))]
+    P1=P2[0:int(np.floor(Ly/2+1))]
     P1[1:-1]=2*P1[1:-1]
     imax=np.argmax(np.abs(P1))
     kxs[ii]=k[imax]
@@ -251,13 +245,14 @@ kys=np.zeros(Ly)
 for jj in range (0,Ly):
     fftdefy=np.fft.fft(def_hole[:,jj])
     P2=np.abs(fftdefy/Ly)
-    P1=P2[0:int(np.floor(Ly/2+1))]
+    P1=P2[0:int(np.floor(Lx/2+1))]
     P1[1:-1]=2*P1[1:-1]
     imax=np.argmax(np.abs(P1))
     imax2=imax
     while P1[imax2]>P1[imax]/10:
             imax2=imax2+1
-    kys[ii]=k[imax2]
+#    kys[ii]=k[imax2]
+    kys[jj]=k[imax2]
 
 ky=np.max(kys[kys!=0])
 
@@ -289,11 +284,11 @@ print('Listo Defo')
 # print(np.shape(def_hole_FC))
 
 plt.figure()
-plt.imshow(def_hole_FC[:150,:150])
+plt.imshow(def_hole_FC[:Lx,:Ly])
 plt.colorbar()
 
 plt.figure()
-plt.imshow(def_hole[:150,:150])
+plt.imshow(def_hole[:Lx,:Ly])
 plt.colorbar()
 
 print(np.shape(def_hole),np.shape(def_hole_FC))
