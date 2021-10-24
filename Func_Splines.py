@@ -1,8 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
+#import matplotlib.pyplot as plt
+#from PIL import Image
 from skimage.measure import label, regionprops
-from skimage.morphology import thin, skeletonize, remove_small_objects
+from skimage.morphology import thin, skeletonize, remove_small_objects, dilation, binary_erosion
+from skimage.filters import laplace, sobel
 from scipy.interpolate import CubicSpline, splev, splrep, splprep
 from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
@@ -10,6 +11,29 @@ from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
 # @profile
+def recupera_fibra(ima,gris,connec=0,std_mul=2.46):
+#    griss = np.asarray(gris)
+#    im = np.asarray(ima)
+    imlap = sobel(laplace(ima-0.8*gris,ksize=3),mode='wrap')
+    binariza = np.mean(imlap) + std_mul*np.std(imlap)
+#    print(np.mean(imlap),np.std(imlap), binariza)
+    imb = imlap>binariza
+    bor = 5
+    fibra = remove_small_objects(imb[bor:-bor,bor:-bor], connectivity=connec)
+#    li = label(fibra)
+# hasta aca es nuevo, para cuando aparece más de un coso despues de binarizar (datos del labo)    
+    prop = regionprops(fibra.astype(int))
+    try:
+        bb = prop[0].bbox
+        recorte = fibra[bb[0]:bb[2], bb[1]:bb[3]]
+        fibra_e = binary_erosion(dilation(recorte))
+        fibra_t = thin(fibra_e)
+#        fibra_t = skeletonize(fibra_e)
+    except:
+        print('Falló')
+        pass
+    return fibra_t, np.array(bb)+bor, fibra_e
+
 def encuentra_fibra(imagenes, connec=4, binariza=110, eccen=0.999):
     fibras, bbs = [], []
     for im_n, im in enumerate(imagenes):
