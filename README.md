@@ -168,3 +168,9 @@ Pasamos a tomar mediciones nuevamente. Primero nos quedamos con 300 imágenes de
 Hecho todo esto, nos dimos cuenta que no habíamos cerrado la canilla de la manguera que desagotaba, por lo que la altura del agua bajó durante las mediciones. Si bien en el tiempo de una medición no se vacía lo suficiente como para afectar los resultados, las distintas mediciones no iban a ser comparables entre sí, por lo que tuvimos que descartar las imágenes del patrón quieto, volver a llenar la cuba (de agua destilada y volver a agregar dióxido de titanio), y tomar las imágenes del patrón quieto de referencia nuevamente.
 
 Esta vez sí medimos la altura del agua: 1.3 cm.
+
+Tomamos también mediciones con el patrón moviéndose con los motores funcionando, y luego con la misma fibra trucha de la vez pasada. Esta vez no de hundió, así que el problema había sido el dióxido de titanio mal disuelto. También tomamos algunas imágenes del fondo gris.
+
+Volvimos al laboratorio, esta vez no para tomar mediciones sino para analizar las que ya habíamos adquirido. Nos dimos cuenta de que el parámetro de binarización no era óptimo, y fuimos probando distintas opciones.
+
+También estuvimos viendo un código capaz de rellenar espacios en las imágenes del patrón de valor 0, con algo llamado _Fourier Completation_, y poniéndolo a punto.
