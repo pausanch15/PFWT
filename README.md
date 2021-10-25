@@ -121,3 +121,17 @@ Lo que realmente nos interesa es poder calcular la curvatura de las fibras (mejo
 
 Para realizar toda esta estadística, solo tuvimos en cuenta aquellas fibras cuya diferencia punto a punto respecto de la original no era mayor a 5 píxeles en ningún tramo. Solo encontramos que las fibras en forma de P presentaban diferencias tales. Queda como idea a futuro solucionar esto. De todas formas, no esperamos encontrar fibras que se doblen de tal manera en el laboratorio.
 
+## Trabajo en el Laboratorio
+Fuimos al laboratorio y nos encontramos con el set up de particle tracking y FTP montado, pero con algunos problemas en la cuba de agua. Para aumentar el contraste entre las partículas y el fondo, se usa dióxido de titanio, el cual había quedado disuelto en el agua de experimentos anteriore, por lo que se habían formado grumos y a decantar. Dado que Pablo se va de viaje por dos semanas en las que no vamos a ir al labo, no tuvo mucho sentido limpiar a fondo la cuba, por lo que realizamos unas primeras mediciones en estas condiciones., y aprovechamos a fimliarizarnos con los equipos.
+
+La cuba de acrílico cuenta con dos paletas acrílicas, conectadas a motores móviles los cuales se controlan desde la computadora. A los mismos se les pueden pasar funciones desde la pc, para que se muevan según ellas.
+
+La cámara de alta resolución también se controla desde la computadora, y podemos elegir el número de frames por segundo que captura, y aplicar un shading, que nos permite fijar el valor de intensidad que la cámara tomará como negro. Tiene más funciones pero no las usaremos nosotros. 
+
+Algo llamativo de la camára es que la misma está permanentemente grabando. Guardará el número de imágenes que pueda hasta llenar la memoria, dado el número de frames por segundos que se setee. Una vez que la memoria se llena, comienza a sobreescribir, pero nunca deja de grabar. De esta manera, podemos hacer que comience una medición (imágenes que no va a sobrescribir) eligiendo nosotros el instante inicial en el cuál empezamos a grabar, el medio o el final. Si inicialmente elegimos que queremos tener n imágenes, con esta función de la cámara podemos quedarnos con las n posteriores al momento en el que hacemos click, con n/2 antes y después del momento en el que hacemos click o con las n previas.
+
+Si bien no pusimos a punto la cuba de agua, la limpiamos un poco y le agregamos agua (de la canilla), y comenzamos a hacer algunas mediciones preliminares. Para FTP usamos distintos patrones rayados, y uno gris. Lo que sucedió fue que aunque le agregáramos dióxido de titáneo, el mismo decantaba dado que ya existían grumos previos y no se podía disolver del todo, por lo que el contraste en el patrón no fue el óptimo. De todas formas, tomamos unas 300 imágenes del patrón quieto, para usar de referencia. También tomamos unas 3000 imágenes del patrón con el agua en movimiento, usando los motores que dijimos al principio. 
+
+Luego hicimos unas pruebas con una fibra que no cumple con lo que buscamos nosotros, pero fueron mediciones de prueba. Usamos un pelo de un pincel común, demasiado rígido. Si bien pudimos obtener unas 1000 imágenes de esta fibra, no fueron óptimas ya que el pelo se hundía (creemos que por la rara densidad que tendría el agua dada la cantidad de dióxido de titáneo mal disuelto).
+
+Para llevarnos todas estas imágenes, las subimos a la nube del df y posteriormente las descargaremos en casa.
