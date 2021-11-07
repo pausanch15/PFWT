@@ -6,6 +6,7 @@ from skimage.io import imread
 from scipy.interpolate import splev
 import h5py 
 #%%
+# traigo imagenes
 gris = np.zeros((1024,1024))
 for i in range(1,301):
     ni = '{:04d}'.format(i)
@@ -22,12 +23,12 @@ for i in range(1,301):
     ref += ima
 ref = ref/300
 #%%
+# para ver
 plt.figure()
 plt.imshow(ref-gris)
 plt.show()
-
-
 #%%
+# reconstruyo fibras y hago FTP
 from time import time
 dphs, splines = [],[]
 t1 = time()
@@ -56,6 +57,7 @@ for num in range(1,501): #
 t2 = time()
 t2-t1
 #%%
+# ms visualizacion
 i = 9
 dpd = dphs[i]
 t_spl = np.linspace(0, 1, 10000)
@@ -74,6 +76,7 @@ plt.plot(xf-lim, yf-lim, 'r-')
 #plt.colorbar()
 plt.show()
 #%%
+# guardo en hdf5
 tf,c1f,c2f,kf = [],[],[],[]
 for i in range(len(splines)):
     tf.append(splines[i][0])
@@ -95,6 +98,7 @@ with h5py.File('ftp.hdf5', 'w') as f:
     h_im.create_dataset('dp',data=dphs)
     
 #%%
+# traigo hdf5
 dps, splif = [],[]
 spli_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\splines.hdf5'
 ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
