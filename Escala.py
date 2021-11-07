@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from skimage.restoration import unwrap_phase as unwrap
 from skimage.io import imread
 #%%
+# traigo imagen
 imas = []
 for i in range(1,4):
     ni = '{:04d}'.format(i)
@@ -16,6 +17,7 @@ for i in range(1,4):
     ima = np.array(ima,dtype='float64')
     imas.append(ima)
 #%%
+# binariro imagen
 i = 2
 plt.figure()
 plt.imshow(imas[i],cmap='gray')
@@ -31,6 +33,7 @@ plt.imshow(cor,cmap='gray')
 #plt.colorbar()
 plt.show()
 #%%
+# hace basicamente todo, no pregunten
 x = np.linspace(750,849,100)
 pix = []
 for n in range(750,850):
