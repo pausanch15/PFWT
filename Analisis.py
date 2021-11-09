@@ -50,7 +50,7 @@ for num in range(1,501): #
         curv,spline = spl.pegar_fibra(tramos,bordes,window=15,s=16)
         splines.append(spline)
         imfc, ffc = cf.hacer_fou_cont(im,fibra,bb,ventana=150,mmx=2,mmy=2)
-        thx,thy, ns = 0.5, 80, 0.5
+        thx,thy, ns = 0.25, 45, 0.75 #0.5, 80, 0.5
         dph, ft, gf = cf.dphase_2d(imfc-gris,ref-gris,thx,thy,ns,inde=9)
         dphs.append(dph)
     except: print('Jajaja', num)
@@ -77,23 +77,23 @@ plt.plot(xf-lim, yf-lim, 'r-')
 plt.show()
 #%%
 # guardo en hdf5
-tf,c1f,c2f,kf = [],[],[],[]
-for i in range(len(splines)):
-    tf.append(splines[i][0])
-    c1f.append(splines[i][1][0])
-    c2f.append(splines[i][1][1])
-    kf.append(splines[i][2])
-    
-with h5py.File('splines.hdf5', 'w') as f:
-    h_splf = f.create_group('splines_recons')
-    dt = h5py.special_dtype(vlen=np.dtype('float64'))
-    
-    h_splf.create_dataset('lista_splf_t',data=tf,dtype=dt)
-    h_splf.create_dataset('lista_splf_c1',data=c1f,dtype=dt)
-    h_splf.create_dataset('lista_splf_c2',data=c2f,dtype=dt)
-    h_splf.create_dataset('lista_splf_k',data=kf)
+#tf,c1f,c2f,kf = [],[],[],[]
+#for i in range(len(splines)):
+#    tf.append(splines[i][0])
+#    c1f.append(splines[i][1][0])
+#    c2f.append(splines[i][1][1])
+#    kf.append(splines[i][2])
+#    
+#with h5py.File('splines.hdf5', 'w') as f:
+#    h_splf = f.create_group('splines_recons')
+#    dt = h5py.special_dtype(vlen=np.dtype('float64'))
+#    
+#    h_splf.create_dataset('lista_splf_t',data=tf,dtype=dt)
+#    h_splf.create_dataset('lista_splf_c1',data=c1f,dtype=dt)
+#    h_splf.create_dataset('lista_splf_c2',data=c2f,dtype=dt)
+#    h_splf.create_dataset('lista_splf_k',data=kf)
 
-with h5py.File('ftp.hdf5', 'w') as f:
+with h5py.File('ftp2.hdf5', 'w') as f:
     h_im = f.create_group('dif_phase')
     h_im.create_dataset('dp',data=dphs)
     
