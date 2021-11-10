@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import Func_Splines as spl
 import Continuacion_Fourier as cf
 from skimage.io import imread
-from scipy.interpolate import splev
+#from scipy.interpolate import splev
 import h5py 
 #%%
 dps = []
-ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
+ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp2.hdf5'
 with h5py.File(ftp_hdf, 'r') as f:
     gdp = f.get('dif_phase')
     h_dp = gdp['dp']
@@ -21,13 +21,14 @@ plt.figure()
 plt.imshow(dps[0])
 plt.show()
 #%%
-nt, nxy = 200, 600
+nt, nxy = 300, 500
 dps_c = np.zeros((nt,nxy,nxy))
+l1, l2 = 300, 800
 for i in range(nt):
-    dps_c[i] = dps[i][300:900,300:900] - np.mean(dps[i][300:900,300:900])
+    dps_c[i] = dps[i][l1:l2,l1:l2] - np.mean(dps[i][l1:l2,l1:l2])
 #%%
 dpft = np.fft.fftn(dps_c)
-w, kx, ky = np.fft.fftfreq(nt,1/250),0.159* np.fft.fftfreq(nxy,0.2106), 0.18*np.fft.fftfreq(nxy,0.2106) 
+w, kx, ky = np.fft.fftfreq(nt,1/250),0.159* np.fft.fftfreq(nxy,0.2106), 0.159*np.fft.fftfreq(nxy,0.2106) 
 #%%
 l = 300*0.2106
 lam_max = 2*l
@@ -48,6 +49,7 @@ def cart2pol(x, y):
     return(rho, phi)
 
 kxx, kyy = np.meshgrid(kx,ky)
+r,theta = cart2pol(kxx,kyy)
 #%%
 n = 3
 #ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
@@ -64,27 +66,58 @@ plt.xlabel('kx')
 plt.ylabel('w')
 plt.ylim([-780,780])
 plt.show()
+#%%
+n = 17
+ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
 fig = plt.figure()
-plt.imshow(np.log(np.abs(np.fft.fftshift(dpft[:,:,n])))**2, extent=ext,aspect='auto')
+plt.imshow(np.log(np.abs(np.fft.fftshift(dpft[n,:,:])))**2, extent=ext,aspect='auto',vmax=100)
 plt.colorbar()
 plt.xlabel('kx')
 plt.ylabel('w')
-plt.ylim([-780,780])
+#plt.ylim([-780,780])
 plt.show()
 
 #%%
-
-#%%
+rs = np.fft.fftshift(r)
+r1 = np.logical_and(rs >= 0.354, rs < 0.357)
+r2 = np.logical_and(rs >= 0.357, rs < 0.360)
+a = 1*r1 + 2*r2
 plt.figure()
-lin = np.array(kx[:100])**-1 * 10
-plt.loglog(kx[:100], np.abs(dpft[0,:100,0]))
-plt.loglog(kx[:100], lin)
-plt.grid()
+ext = np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
+plt.imshow(a,extent=ext)
+plt.colorbar()
+plt.show()
+#%%
+n = 52
+dpfts = np.abs(np.fft.fftshift(dpft[n,:,:]))
+rs = np.fft.fftshift(r)
+ris = np.arange(0,0.363,0.003)
+
+vmr = []
+for i in range(1,len(ris)):
+    r1 = np.logical_and(rs > ris[i-1], rs < ris[i])
+    mr_dp = np.mean( (np.log(dpfts)[r1>0])**2 )
+    vmr.append(mr_dp) 
+
+rim = (ris[1:]+ris[:-1])/2     
+
+plt.figure()
+plt.plot(rim,vmr)
+plt.show()      
+#%%
+ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
+fig = plt.figure()
+plt.imshow(np.log(dpfts)**2*r1, extent=ext,aspect='auto') #,vmax=100)
+plt.colorbar()
+plt.xlabel('kx')
+plt.ylabel('w')
+#plt.ylim([-780,780])
 plt.show()
 
 #%%
 #-------------------------------------------------------------------------------------------
 #%%
+# Esto lo uso para probar distintas convinaciones de thx, thy, ns para reducir las lineas verticales
 gris = np.zeros((1024,1024))
 for i in range(1,301):
     ni = '{:04d}'.format(i)
