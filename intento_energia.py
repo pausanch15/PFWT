@@ -7,7 +7,8 @@ from skimage.io import imread
 import h5py 
 #%%
 dps = []
-ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp2.hdf5'
+ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
+#hay un ftp2 tambien
 with h5py.File(ftp_hdf, 'r') as f:
     gdp = f.get('dif_phase')
     h_dp = gdp['dp']
@@ -51,23 +52,23 @@ def cart2pol(x, y):
 kxx, kyy = np.meshgrid(kx,ky)
 r,theta = cart2pol(kxx,kyy)
 #%%
-n = 3
+n = 56
 #ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
 ext = 2*np.pi * np.array([np.min(kx),np.max(kx),np.min(w),np.max(w)])
 fig = plt.figure()
 plt.imshow(np.log(np.abs(np.fft.fftshift(dpft[:,:,n])))**2, extent=ext,aspect='auto')
 #plt.plot(kx[:150]*2*np.pi,ws,'r-')
-plt.plot(-kx[:150],-ws,'r--')
-plt.plot(-kx[:150],ws,'r--')
-plt.plot(kx[:150],-ws,'r--')
-plt.plot(kx[:150],ws,'r--')
+#plt.plot(-kx[:150],-ws,'r--')
+#plt.plot(-kx[:150],ws,'r--')
+#plt.plot(kx[:150],-ws,'r--')
+#plt.plot(kx[:150],ws,'r--')
 plt.colorbar()
 plt.xlabel('kx')
 plt.ylabel('w')
 plt.ylim([-780,780])
 plt.show()
 #%%
-n = 17
+n = 29
 ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
 fig = plt.figure()
 plt.imshow(np.log(np.abs(np.fft.fftshift(dpft[n,:,:])))**2, extent=ext,aspect='auto',vmax=100)
@@ -88,7 +89,7 @@ plt.imshow(a,extent=ext)
 plt.colorbar()
 plt.show()
 #%%
-n = 52
+n = 51
 dpfts = np.abs(np.fft.fftshift(dpft[n,:,:]))
 rs = np.fft.fftshift(r)
 ris = np.arange(0,0.363,0.003)
@@ -154,6 +155,48 @@ plt.title('thx = '+str(thx)+', thy = '+str(thy)+', ns = '+str(ns))
 #plt.imshow(dph)
 plt.colorbar()
 plt.show()
-
+#%%
+#----------------------------------------------------------------------------------------------------
+#Pruebo de hacer con todos los datos
+dps = []
+ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
+#hay un ftp2 tambien
+with h5py.File(ftp_hdf, 'r') as f:
+    gdp = f.get('dif_phase')
+    h_dp = gdp['dp']
+    for i in range(len(h_dp)):
+        dps.append(h_dp[i])
+#%%
+#499 = len(dps)
+#1004 para sacar 10 pixeles de cada borde
+ft_espacial = np.zeros((1004,1004)) + 1j * np.zeros((1004,1004))
+with h5py.File('ener_hdf', 'w') as f:
+    esp_ft = f.create_group('espacial')
+    for i in range(499):
+        if i%20 == 0: print(i,end=' ')
+        ftes = np.fft.fft2(dps[i][10:-10,10:-10]) 
+        ft_espacial = np.fft.fftshift(ftes)
+        esp_ft.create_dataset('tiem_'+str(i),data=ft_espacial)
+#%%
+#with h5py.File('enert_hdf', 'w') as f:
+#    
+#ft_esp_tem = np.zeros((499,1004,1004))
+#%%
+n = 170
+plt.figure()
+plt.imshow(np.log(ft_espacial[n]))
+plt.colorbar()
+plt.show()
+#%%
+#pruebo algo de hdf5
+with h5py.File('prueba','w') as f:
+    gru = f.create_group('grupi')
+    dats = gru.create_dataset('llenar',(10,10,10), dtype='complex')
+    dats[0] = np.ones((10,10)) + 1j * np.ones((10,10))
+#%%
+with h5py.File('prueba','r') as f:
+    gr = f.get('grupi')
+    grr = gr['llenar']
+    print(grr[0])
 
 
