@@ -172,21 +172,46 @@ with h5py.File(ftp_hdf, 'r') as f:
 ft_espacial = np.zeros((1004,1004)) + 1j * np.zeros((1004,1004))
 with h5py.File('ener_hdf', 'w') as f:
     esp_ft = f.create_group('espacial')
+    dats = esp_ft.create_dataset('llenar',(499,1004,1004), dtype='complex')
     for i in range(499):
         if i%20 == 0: print(i,end=' ')
         ftes = np.fft.fft2(dps[i][10:-10,10:-10]) 
-        ft_espacial = np.fft.fftshift(ftes)
-        esp_ft.create_dataset('tiem_'+str(i),data=ft_espacial)
+        dats[i] = np.fft.fftshift(ftes)
 #%%
-#with h5py.File('enert_hdf', 'w') as f:
-#    
+#todavia estoy viendo como hacer funcionar esto
+from time import time
+t1 = time()
+with h5py.File('enert_hdf', 'w') as fw:
+    tem_ft = fw.create_group('ft_total')
+    tf = tem_ft.create_dataset('transformada',(1004,1004,499), dtype='complex')
+    with h5py.File('ener_hdf','r') as fr:
+        ftesp = fr.get('espacial')
+        dfft = ftesp['llenar'] 
+#        ftij = np.fft.fft(dfft[:,0,2]) 
+#        for i in range(len(ftij)):
+#            tf[0,2,i] = ftij[i] 
+#        tf[0,0,:] = np.fft.fft(dfft[:,0,0]) 
+#        print( np.fft.fft(dfft[:,0,0]), len( np.fft.fft(dfft[:,0,0] ) ) )
+        for i in range(400):
+            if (i+0)%20 == 0: print(i, end=' ')
+            for j in range(400):
+##                print(j)
+                ftij = np.fft.fft(dfft[:,i,j])   
+                for k in range(len(ftij)):
+                    tf[i,j,k] = ftij[k]
+t2 = time()
+print(t2-t1)    
 #ft_esp_tem = np.zeros((499,1004,1004))
 #%%
-n = 170
-plt.figure()
-plt.imshow(np.log(ft_espacial[n]))
-plt.colorbar()
-plt.show()
+
+a = np.ones((5,10,10))
+b = np.fft.fft(a,axis=0)
+b[:,0,0], np.fft.fft(a[:,0,0])
+#n = 170
+#plt.figure()
+#plt.imshow(np.log(ft_espacial[n]))
+#plt.colorbar()
+#plt.show()
 #%%
 #pruebo algo de hdf5
 with h5py.File('prueba','w') as f:
@@ -194,9 +219,11 @@ with h5py.File('prueba','w') as f:
     dats = gru.create_dataset('llenar',(10,10,10), dtype='complex')
     dats[0] = np.ones((10,10)) + 1j * np.ones((10,10))
 #%%
-with h5py.File('prueba','r') as f:
-    gr = f.get('grupi')
-    grr = gr['llenar']
-    print(grr[0])
+with h5py.File('ener_hdf','r') as f:
+    gr = f.get('espacial')
+    grr = gr['llenar'][:,0,0]
+    print(np.shape(grr))
+    
+    
 
 
