@@ -79,6 +79,7 @@ plt.ylabel('w')
 plt.show()
 
 #%%
+# lo de promediar en radio 
 rs = np.fft.fftshift(r)
 r1 = np.logical_and(rs >= 0.354, rs < 0.357)
 r2 = np.logical_and(rs >= 0.357, rs < 0.360)
@@ -89,22 +90,34 @@ plt.imshow(a,extent=ext)
 plt.colorbar()
 plt.show()
 #%%
-n = 51
-dpfts = np.abs(np.fft.fftshift(dpft[n,:,:]))
+kw = np.zeros((120,300))
+
 rs = np.fft.fftshift(r)
 ris = np.arange(0,0.363,0.003)
-
-vmr = []
-for i in range(1,len(ris)):
-    r1 = np.logical_and(rs > ris[i-1], rs < ris[i])
-    mr_dp = np.mean( (np.log(dpfts)[r1>0])**2 )
-    vmr.append(mr_dp) 
-
-rim = (ris[1:]+ris[:-1])/2     
-
+rim = (ris[1:]+ris[:-1])/2 
+      
+dpsh = np.fft.fftshift(dpft)
+for n in range(300):
+#n = 0 
+#    dpfts = np.abs(np.fft.fftshift(dpft[n,:,:]))
+    dpfts = np.abs(dpsh[n,:,:])
+    
+    vmr = []
+    for i in range(1,len(ris)):
+        r1 = np.logical_and(rs > ris[i-1], rs < ris[i])
+        mr_dp = np.mean( (np.log(dpfts)[r1>0])**2 )
+        vmr.append(mr_dp) 
+        
+    kw[:,n] = vmr
+    
 plt.figure()
 plt.plot(rim,vmr)
 plt.show()      
+#%%
+plt.figure()
+ext = 2*np.pi*np.array([np.min(w)/1000,np.max(w)/1000,np.min(rim),np.max(rim)])
+plt.imshow(kw, origin='lower', extent=ext)
+plt.show()
 #%%
 ext = 2*np.pi*np.array([np.min(kx),np.max(kx),np.min(ky),np.max(ky)])
 fig = plt.figure()
@@ -167,19 +180,43 @@ with h5py.File(ftp_hdf, 'r') as f:
     for i in range(len(h_dp)):
         dps.append(h_dp[i])
 #%%
+dp_fft = np.zeros((1004,1004,100)) + 1j * np.zeros((1004,1004,100))
+for i in range(100):
+    if i%10 == 0: print(i, end=' ')
+    dp_fft[:,:,i] = np.fft.fft2(dps[i][10:-10,10:-10])
+#%%
 #499 = len(dps)
 #1004 para sacar 10 pixeles de cada borde
+from time import time
+t1 = time()
 ft_espacial = np.zeros((1004,1004)) + 1j * np.zeros((1004,1004))
 with h5py.File('ener_hdf', 'w') as f:
     esp_ft = f.create_group('espacial')
-    dats = esp_ft.create_dataset('llenar',(499,1004,1004), dtype='complex')
-    for i in range(499):
-        if i%20 == 0: print(i,end=' ')
-        ftes = np.fft.fft2(dps[i][10:-10,10:-10]) 
-        dats[i] = np.fft.fftshift(ftes)
+    dats = esp_ft.create_dataset('llenar',(1004,1004,499), dtype='complex')
+    for j in range(4):
+        dp_fft = np.zeros((1004,1004,100)) + 1j * np.zeros((1004,1004,100))
+        for i in range(100):
+    #        if i%10 == 0: print(i, end=' ')
+            dp_fft[:,:,i] = np.fft.fft2(dps[100*j+i][10:-10,10:-10])
+        dats[:,:,j*100:100*j+100] = dp_fft
+     
+    dp_fft = np.zeros((1004,1004,99)) + 1j * np.zeros((1004,1004,99))
+    for i in range(99):
+#        if i%10 == 0: print(i, end=' ')
+        dp_fft[:,:,i] = np.fft.fft2(dps[400+i][10:-10,10:-10])
+    dats[:,:,400:499] = dp_fft
+    
+        
+#    for i in range(499):
+#        if i%20 == 0: print(i,end=' ')
+#        ftes = np.fft.fft2(dps[i][10:-10,10:-10]) 
+#        dats[:,:,i] = np.fft.fftshift(ftes)
+
+t2 = time()
+print(t2-t1)
+# me llevo 3120 seg correr, estaba haciendo otras cosas tambien asi que puede ser que tarde un poco menos
 #%%
 #todavia estoy viendo como hacer funcionar esto
-from time import time
 t1 = time()
 with h5py.File('enert_hdf', 'w') as fw:
     tem_ft = fw.create_group('ft_total')
@@ -187,23 +224,36 @@ with h5py.File('enert_hdf', 'w') as fw:
     with h5py.File('ener_hdf','r') as fr:
         ftesp = fr.get('espacial')
         dfft = ftesp['llenar'] 
+        for ii in range(1004):
+            if ii%20 == 0: print(ii, end=' ')
+            for jj in range(1004):
+                # print(jj)
+#                st = ftesp['dp'][ii, jj, :]
+                ftij = np.fft.fft(dfft[ii, jj, :])   
+                # ftij = np.fft.fft(st[ii,jj,:])   
+                tf[ii, jj, :] = ftij
 #        ftij = np.fft.fft(dfft[:,0,2]) 
 #        for i in range(len(ftij)):
 #            tf[0,2,i] = ftij[i] 
 #        tf[0,0,:] = np.fft.fft(dfft[:,0,0]) 
 #        print( np.fft.fft(dfft[:,0,0]), len( np.fft.fft(dfft[:,0,0] ) ) )
-        for i in range(400):
-            if (i+0)%20 == 0: print(i, end=' ')
-            for j in range(400):
-##                print(j)
-                ftij = np.fft.fft(dfft[:,i,j])   
-                for k in range(len(ftij)):
-                    tf[i,j,k] = ftij[k]
+#        for i in range(400):
+#            if (i+0)%20 == 0: print(i, end=' ')
+#            for j in range(400):
+###                print(j)
+#                ftij = np.fft.fft(dfft[:,i,j])   
+#                for k in range(len(ftij)):
+#                    tf[i,j,k] = ftij[k]
+
+
 t2 = time()
 print(t2-t1)    
+# Esta parte tardo 624 seg (sin estar haciendo nada mas con la compu)
 #ft_esp_tem = np.zeros((499,1004,1004))
 #%%
 
+
+#%%
 a = np.ones((5,10,10))
 b = np.fft.fft(a,axis=0)
 b[:,0,0], np.fft.fft(a[:,0,0])
@@ -224,6 +274,43 @@ with h5py.File('ener_hdf','r') as f:
     grr = gr['llenar'][:,0,0]
     print(np.shape(grr))
     
-    
-
+#%%
+#----------------------------------------------------------------------------------
+#%%
+# Lo que hicimos con pablo para ver si funciona igual
+import h5py
+import numpy as np
+from time import time
+#%%
+print('creando random set')
+dphs = 1j*np.random.randn(1000,1000,100)
+# lo hice de 1000,1000,100 porque sino me llenaba la ram
+#%%
+print('creando archivo con datos')
+with h5py.File('archivo_input.hdf5', 'w') as f:
+    h_im = f.create_group('df')
+    dset = h_im.create_dataset('dp', (1000,1000,500), dtype='complex')
+    for i in range(5):
+        dset[:,:,100*i:100*i+100] = 1j*np.random.randn(1000,1000,100)
+#%%
+t1 = time()
+with h5py.File('archivo_destino.hdf5', 'w') as f:
+    h_im2 = f.create_group('df')
+    print('calculando fft temporal')
+    destino = h_im2.create_dataset('dp', (1000,1000,500), dtype='complex')
+    with h5py.File('archivo_input.hdf5','r') as fr:
+            ftesp = fr.get('df')
+            st = ftesp['dp']#[ii, jj, :]
+            for ii in range(50):
+                # print(str(ii) + "====================================")
+                for jj in range(1000):
+                    # print(jj)
+                    st = ftesp['dp'][ii, jj, :]
+                    ftij = np.fft.fft(st)   
+                    # ftij = np.fft.fft(st[ii,jj,:])   
+                    destino[ii, jj, :] = ftij
+t2 = time()
+print(t2-t1)
+# un timeit tal y como esta tarda 1.19 s 
+#%%
 
