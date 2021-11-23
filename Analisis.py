@@ -5,12 +5,14 @@ import Continuacion_Fourier as cf
 from skimage.io import imread
 from scipy.interpolate import splev
 import h5py 
+plt.ion()
 #%%
 # traigo imagenes
 gris = np.zeros((1024,1024))
 for i in range(1,301):
     ni = '{:04d}'.format(i)
-    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Grises\ID_0_C1S000600'+ni+'.tif')
+    # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Grises\ID_0_C1S000600'+ni+'.tif')
+    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0006/ID_0_C1S000600'+ni+'.tif')
     ima = np.array(ima,dtype='float')
     gris += ima
 gris = gris/300
@@ -18,7 +20,8 @@ gris = gris/300
 ref = np.zeros((1024,1024))
 for i in range(1,301):
     ni = '{:04d}'.format(i)
-    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Referencia\ID_0_C1S000300'+ni+'.tif')
+    # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Referencia\ID_0_C1S000300'+ni+'.tif')
+    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
     ima = np.array(ima,dtype='float')
     ref += ima
 ref = ref/300
@@ -34,10 +37,11 @@ dphs, splines = [],[]
 t1 = time()
 #47 no funca, 51 usar mult=2 
 #probs 1-500: 47, 51
-for num in range(1,501): #
+for num in range(1,250): #
     if num%20 == 0: print(num,end=' ')
     ni = '{:04d}'.format(num)
-    im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\FTP_fibra\ID_0_C1S000500'+ni+'.tif')
+    # im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\FTP_fibra\ID_0_C1S000500'+ni+'.tif')
+    im = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0005/ID_0_C1S000500'+ni+'.tif')
     im = np.array(im,dtype='float')
     
     mul = 2.46
@@ -100,8 +104,10 @@ with h5py.File('ftp2.hdf5', 'w') as f:
 #%%
 # traigo hdf5
 dps, splif = [],[]
-spli_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\splines.hdf5'
-ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
+# spli_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\splines.hdf5'
+spli_hdf = r'/home/paula/Documents/Fisica2021/L6y7/PFWT/splines.hdf5'
+# ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp.hdf5'
+ftp_hdf = r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ftp2.hdf5'
 
 with h5py.File(spli_hdf, 'r') as f:  
     gspf = f.get('splines_recons')
@@ -130,10 +136,11 @@ plt.colorbar()
 plt.show()
 #%%
 # Para hacer una imagen sola
-num = 324 #47,51
+num = 2 #47,51
 # 47 no funciona
 ni = '{:04d}'.format(num)
-im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\FTP_fibra\ID_0_C1S000500'+ni+'.tif')
+# im = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\FTP_fibra\ID_0_C1S000500'+ni+'.tif')
+im = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0005/ID_0_C1S000500'+ni+'.tif')
 im = np.array(im,dtype='float')
 
 mul = 2.46
