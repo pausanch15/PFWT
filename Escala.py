@@ -13,7 +13,8 @@ from skimage.io import imread
 imas = []
 for i in range(1,4):
     ni = '{:04d}'.format(i)
-    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Escala\ID_0_C1S000200'+ni+'.tif')
+    # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Escala\ID_0_C1S000200'+ni+'.tif')
+    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0002/ID_0_C1S000200'+ni+'.tif')
     ima = np.array(ima,dtype='float64')
     imas.append(ima)
 #%%
