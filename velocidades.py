@@ -15,7 +15,9 @@ plt.ion()
 #Si traigo los 250 que hice se me tilda la pc, así que hago todo para 50
 dps = []
 
-ftp_hdf = r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ftp2.hdf5'
+#ftp_hdf = r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ftp2.hdf5'
+ftp_hdf = r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Labo\Analisado\ftp2.hdf5'
+# Asi ya queda para que los dos podamos correr mas facil
 
 with h5py.File(ftp_hdf, 'r') as f:
     gdp = f.get('dif_phase')
