@@ -72,4 +72,48 @@ plt.show()
 #viendo los grafico para x e y del radio, diria que es (390 +- 2) pixeles
 
 #propagando errores me queda que cada pixel equivale a (0.02106 +- 0.00017) cm
-#entonces la imagen completa serian (21.56 +- 0.17) cm                                                       
+#entonces la imagen completa serian (21.56 +- 0.17) cm             
+#%%
+#==============================================================================
+# 
+#==============================================================================
+# Nuevos datos
+# traigo imagen
+imas = []
+for i in range(1,16):
+    ni = '{:04d}'.format(i)
+    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0004\ID_0_C1S000400'+ni+'.tif')
+#    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0002/ID_0_C1S000200'+ni+'.tif')
+    ima = np.array(ima,dtype='float64')
+    imas.append(ima)
+#%%                                        
+plt.figure()
+plt.imshow(imas[0],cmap='gray')
+plt.colorbar()
+plt.show()
+plt.figure()
+plt.imshow(imas[0]<200)
+plt.show()
+#%%
+imt = imas[0]<200
+lar = 0
+for n in range(450,550):    
+    x = np.arange(0,1024,1)
+    lin = imt[:,n]
+    unos = np.ones_like(lin[280:600])
+    lin[280:600] = unos
+    l = np.sum(lin)
+    if l > lar:
+        lar = l
+        mn, pix = n, lar
+
+print(pix,mn)
+
+# Los (8.2 +- 0.05) cm
+#viendo los grafico para y del radio, diria que es (393 +- 5) pixeles
+
+#propagando errores me queda que cada pixel equivale a (0.02086 +- 0.00029) cm
+#entonces la imagen completa serian (21.37 +- 0.30) cm      
+#%%
+
+
