@@ -65,7 +65,18 @@ def encontrar_fibra(im,bb):
         arb = props[i].extent
         if arb > 0.05: lal[lal==i+1] = 0
     fib = lal>0
-    return fib
+   
+    lfib = np.where(fib) 
+    yma, xma = np.max(lfib[0]),np.max(lfib[1])
+    ymi, xmi = np.min(lfib[0]),np.min(lfib[1])
+    
+    xmax, ymax = min(1023,xma+bb[2]+1), min(1023,yma+bb[0]+1) 
+    xmin, ymin = max(0,xmi+bb[2]), max(0,ymi+bb[0])
+    #    bbs = [xmi+bb[2],ymi+bb[0],xma+bb[3],yma+bb[1]]
+    #    bbs = [bb[0],bb[2],bb[1],bb[3]]
+    bbs = [ymin,xmin,ymax,xmax]
+    fii = fib[ymi:yma+1,xmi:xma+1]
+    return fii, imr, bbs
 
 def conectar_tramo(tramos,bordes,imprimir=False):
     if len(tramos) > 1 and len(bordes) > 2:
@@ -92,18 +103,18 @@ def conectar_tramo(tramos,bordes,imprimir=False):
 
 
 #%%
-num = 1800
+num = 2450
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float')
 #
 #imr = im[0:60,250:550] #800
-imr = im[210:440,570:810] #1800
+#imr = im[210:440,570:810] #1800
 #imr = im[0:240,380:590] #987
 #imr = im[0:280,470:630] #1245
 #imr = im[100:400,550:800] #1600
-#imr = im[400:700,600:830] #2450
+imr = im[400:700,600:830] #2450
 #imr = im[850:1024,650:850] #2700
 
 plt.figure()
@@ -117,10 +128,10 @@ plt.show()
 #%%
 t1 = time()
 
-bb = [210,440,570,810]
-fib = encontrar_fibra(im,bb)
+bb = [400,700,600,830]
+fib, imr, bbn = encontrar_fibra(im,bb)
 
-tramos,bordes = spl.cortar_fibra_rap(fib,bb,cortar_ruido=True)
+tramos,bordes = spl.cortar_fibra_rap(fib,bbn,cortar_ruido=True)
 tramos, bo, nnei = conectar_tramo(tramos,bordes,imprimir=False)
 tramos = ordenar_fibra(tramos,bo,nnei)
 curv,spline = spl.pegar_fibra(tramos,bo,window=27,s=25)
@@ -136,5 +147,32 @@ plt.imshow(im)
 plt.plot(xf, yf, 'r-')
 plt.show()
 plt.figure()
-plt.imshow(im[bb[0]:bb[1],bb[2]:bb[3]])
-plt.plot()
+plt.imshow(imr)
+plt.plot(xf-bb[2], yf-bb[0], 'r-')
+plt.show()
+plt.figure()
+plt.imshow(imr)
+plt.show()
+#%%
+plt.figure()
+plt.imshow(fib)
+plt.show()
+
+lfib = np.where(fib) 
+yma, xma = np.max(lfib[0]),np.max(lfib[1])
+ymi, xmi = np.min(lfib[0]),np.min(lfib[1])
+
+xmax, ymax = min(1023,xma+bb[2]+1), min(1023,yma+bb[0]+1) 
+xmin, ymin = max(0,xmi+bb[2]), max(0,ymi+bb[0])
+#    bbs = [xmi+bb[2],ymi+bb[0],xma+bb[3],yma+bb[1]]
+#    bbs = [bb[0],bb[2],bb[1],bb[3]]
+bbs = [xmin,ymin,xmax,ymax]
+fii = fib[ymi:yma+1,xmi:xma+1]
+
+print(bbs)
+
+plt.figure()
+plt.imshow(fii)
+plt.show()
+np.shape(fii)
+#%%
