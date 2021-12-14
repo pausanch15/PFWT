@@ -421,16 +421,16 @@ le = enhance_contrast(img_as_ubyte(l5),disk(5))
 #print(t2-t1)
 
 lph = -lp*(lp<0)
-sas = hessian(lph,mode='nearest')
-lal = label(binary_erosion(sas>0.8,disk(1)))  #sas>0.8)
-props = regionprops(lal)
-for i in range(np.max(lal)):
-    arb = props[i].extent
-    if arb > 0.3: lal[lal==i+1] = 0
-#lap = np.pad(lal,(20,20))
-#hg = dilation(lap>0,disk(7))
-#hg = binary_closing(lap>0,disk(1))
-fibr = skeletonize(dilation(lal>0),method='lee')
+#sas = hessian(lph,mode='nearest')
+#lal = label(binary_erosion(sas>0.8,disk(1)))  #sas>0.8)
+#props = regionprops(lal)
+#for i in range(np.max(lal)):
+#    arb = props[i].extent
+#    if arb > 0.3: lal[lal==i+1] = 0
+##lap = np.pad(lal,(20,20))
+##hg = dilation(lap>0,disk(7))
+##hg = binary_closing(lap>0,disk(1))
+#fibr = skeletonize(dilation(lal>0),method='lee')
 #fib = fibr[:,:]>0
 #kernel = np.array([[1,1,1],
 #                   [1,1,1],
@@ -448,9 +448,9 @@ fibr = skeletonize(dilation(lal>0),method='lee')
 #fibi = ( fib * lol )>0
 #fibra = skeletonize(dilation(fibi,disk(3)))
 #fre = pcv.morphology.skeletonize(lal>0)
-ps, si, so = pcv.morphology.prune(fibr,size=20)
-fib = skeletonize(ps>0)
-t2 = time()
+#ps, si, so = pcv.morphology.prune(fibr,size=20)
+#fib = skeletonize(ps>0)
+#t2 = time()
 #print(t2-t1)
 
 lpm = lph[:,:]
