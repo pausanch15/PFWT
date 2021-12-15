@@ -4,7 +4,8 @@ import Func_Splines as spl
 import Continuacion_Fourier as cf
 from skimage.io import imread
 from scipy.interpolate import splev
-import h5py 
+from time import time
+#import h5py 
 plt.ion()
 #%%
 # traigo imagenes
@@ -75,7 +76,7 @@ L, D = 79.6, 20.3
 thx,thy, ns = 0.25, 45, 0.75 #0.5, 80, 0.5
 t1 = time()
 dphs = np.zeros((100,1024,1024))
-for num in range(1,101):
+for num in range(1,20):
     if num%10 == 0: print(num, end=' ')
     ni = '{:04d}'.format(num)
     ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
@@ -86,7 +87,7 @@ for num in range(1,101):
 t2 = time()
 print(t2-t1)
 #%%
-alt = (L*dphs) / (dphs - w*D)
+alt = (L*dphs) / (dphs - w*D) 
 #%%
 plt.figure()
 plt.imshow(alt[10])
@@ -111,15 +112,15 @@ at, xt, yt = alt[:,li:-li:i,li:-li:i], xx[li:-li:i,li:-li:i], yy[li:-li:i,li:-li
 
 def update_plot(frame_number, at, plot):
     plot[0].remove()
-    plot[0] = ax.plot_wireframe(xt, yt, at[frame_number], cmap="magma")
+    plot[0] = ax.plot_surface(xt, yt, (at[frame_number]-np.mean(at[frame_number])), cmap="magma")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
 fps = 20 # frame per sec
-frn = 100 # frame number of the animation
+frn = 20 # frame number of the animation
 
-plot = [ax.plot_wireframe(xt, yt, at[0], color='0.75', rstride=10, cstride=10)]
+plot = [ax.plot_surface(xt, yt, at[0]-np.mean(at[0]), color='0.75', rstride=10, cstride=10)]
 ax.set_zlim(2.5,-2.5)
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(at, plot), interval=1000/fps)
 #%%
@@ -142,7 +143,7 @@ plt.figure()
 plt.imshow(im)
 plt.show()
 #%%
-thx,thy, ns = 0.5, 80, 0.75 #0.25, 45, 0.75
+thx,thy, ns = 0.25, 45, 0.75 #0.25, 45, 0.75
 dph, ft, gf = cf.dphase_2d(im,ref-gris,thx,thy,ns,inde=9)
 #%%
 d = (1014-9) / 81 * 0.02086
