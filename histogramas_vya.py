@@ -76,7 +76,27 @@ del(alt)
 
 #%%
 #Ahora los hsitogramas
-#Primero de las velocidades
+#Primero el de las alturas
+h_un_frame = 1024*1024 #Cantidad dealturas por frame
+n_frames = len(alturas)
+hs = np.zeros(h_un_frame*n_frames) #array que va a tener la velocidad de cada punto de todos los frames
+
+for i, im in enumerate(alturas):
+    i = i + 1
+    if i == len(alturas):
+        break
+    h = im.flatten()
+    inic =  (i-1)*h_un_frame
+    fin = i*h_un_frame
+    hs[inic:fin] = h
+    del(h, inic, fin)
+
+plt.hist(hs, bins=100, density=True, edgecolor="black")
+plt.grid()
+plt.title('Histograma de Alturas')
+plt.show()
+
+#Ahora de las velocidades
 v_un_frame = np.shape((alturas[1] - alturas[0]).flatten())[0] #Cantidad de velocidades por frame
 n_frames = len(alturas)
 v = np.zeros(v_un_frame*n_frames) #array que va a tener la velocidad de cada punto de todos los frames
