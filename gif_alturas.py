@@ -57,6 +57,7 @@ for num in range(1,20):
     im = np.array(ima,dtype='float')
     dph, ft, gf = cf.dphase_2d(im,ref-gris,thx,thy,ns,inde=9)
     dphs[num-1] = dph
+    del(ni, ima, im, dph)
 
 #Defino los valores de L y D (los medimos en el labo)
 w = 2*np.pi/d
@@ -79,20 +80,23 @@ from mpl_toolkits.mplot3d import Axes3D
 x = np.arange(0,1024,1)
 xx, yy = np.meshgrid(x,x)
 
-from matplotlib import animation
+from matplotlib import animation, cm
 i,li = 3, 10
 at, xt, yt = alturas[:,li:-li:i,li:-li:i], xx[li:-li:i,li:-li:i], yy[li:-li:i,li:-li:i] 
 
 def update_plot(frame_number, at, plot):
     plot[0].remove()
-    plot[0] = ax.plot_surface(xt, yt, (at[frame_number]-np.mean(at[frame_number])), cmap="magma")
+    plot[0] = ax.plot_surface(xt, yt, (at[frame_number]-np.mean(at[frame_number])), cmap=cm.coolwarm)
+    # fig.colorbar(plot[0], shrink=0.5, aspect=10)
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
+fig.colorbar(plot[0], shrink=0.5, aspect=10)
 
 fps = 20 # frame per sec
-frn = 20 # frame number of the animation
+frn = 19 # frame number of the animation
 
 plot = [ax.plot_surface(xt, yt, at[0]-np.mean(at[0]), color='0.75', rstride=10, cstride=10)]
 ax.set_zlim(2.5,-2.5)
 ani = animation.FuncAnimation(fig, update_plot, frn, fargs=(at, plot), interval=1000/fps)
+ani.save('alturas.gif', fps=fps)
