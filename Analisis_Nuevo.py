@@ -4,6 +4,7 @@ import Func_Splines as spl
 import Continuacion_Fourier as cf
 from skimage.io import imread
 from scipy.interpolate import splev
+from plantcv import plantcv as pcv
 import h5py 
 plt.ion()
 #%%
@@ -37,7 +38,7 @@ plt.imshow(ref-gris,cmap='gray')
 plt.show()
 #%%
 from scipy.signal import convolve2d, medfilt
-from skimage.filters import gaussian, frangi, sato, gabor, laplace, sobel, roberts, hessian
+from skimage.filters import gaussian, frangi, sato, gabor, laplace, sobel, roberts, hessian, inverse
 from skimage.filters.rank import minimum, enhance_contrast, gradient
 from skimage.morphology import disk, flood, flood_fill
 from skimage.measure import label, regionprops
@@ -286,16 +287,20 @@ plt.show()
 #==============================================================================
 # Pruebo forzando tener 1 solo tramo
 #==============================================================================
-num = 900
+num = 1801
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float')
 #
-#imr = im[0:60,250:520] #800
-#imr = im[210:440,570:810] #1800
-imr = im[0:160,330:580]
-         
+#imr = im[0:60,250:550] #800
+imr = im[210:440,570:810] #1800
+#imr = im[0:240,380:590] #987
+#imr = im[0:280,470:630] #1245
+#imr = im[100:400,550:800] #1600
+#imr = im[400:700,600:830] #2450
+#imr = im[850:1024,650:850] #2700
+
 plt.figure()
 plt.imshow(im)
 plt.colorbar()
@@ -352,41 +357,145 @@ t1 = time()
 a = gabor(imr,0.1)
 b = imr - 2*(a[0]-np.min(a[0]) + 10)
 c = gaussian(b,0.7)
-#d = (c - np.mean(c))
 lp = adjust_log(c,1) - 9
 l5 = -lp**5 * (lp<0)
-##ls = sato(-l5,mode='constant')
-le = enhance_contrast(img_as_ubyte(l5),disk(3))#>2 #(sato(lp)) > 0.065
-##lr = remove_small_objects(le>20,connectivity=50)
-print(np.mean(le),np.std(le),np.median(le))
-lal = label(le>8)
+le = enhance_contrast(img_as_ubyte(l5),disk(5)) 
+
+#le = enhance_contrast(img_as_ubyte(lel),disk(3)) 
+#mu,st,me = np.mean(le),np.std(le),np.median(le)
+#print(mu,st,me,round(mu+st)+1)
+##
+#
+#lal = label(le > round(mu+st))
+#props = regionprops(lal)
+#
+#for i in range(np.max(lal)):
+#    ar = props[i].area
+#    arb = props[i].extent
+##    print(i+1, arb)
+#    if arb > 0.31: lal[lal==i+1] = 0                     
+##
+#lt = binary_closing(lal>0,disk(5)) 
+#fibra3 = skeletonize(lt)
+#t2 = time()
+#print('3:',t2-t1)
+
+
+
+#po = hessian(l5)
+#op = remove_small_objects(po==1,connectivity=30)
+#it = binary_erosion(op)
+#at = remove_small_objects(it,min_size=30,connectivity=100)
+#ap = dilation(at,disk(3)) 
+#lal = label(ap)
+#props = regionprops(lal)
+#
+#for i in range(np.max(lal)):
+#    ar = props[i].area
+#    arb = props[i].extent
+##    print(i+1, arb)
+#    if arb > 0.45: lal[lal==i+1] = 0
+##ki = binary_closing(lal>0,disk(20))                      
+#fibra3 = skeletonize(lal>0)
+
+#yu = sato(-l5)
+#uy = enhance_contrast(img_as_ubyte(yu/np.max(yu)),disk(7)) 
+#mu,st,me = np.mean(uy),np.std(uy),np.median(uy)
+##print(mu,st,me,round(mu+st)+1)
+#ty = label(uy>round(mu+st)+1)
+#props = regionprops(ty)
+#for i in range(np.max(ty)):
+#    ar = props[i].area
+#    if ar < 10: 
+#        ty[ty==i+1] = 0
+#          
+#lal = label(dilation(ty,disk(3))>0)
+#props = regionprops(lal)
+#for i in range(np.max(lal)):
+#    arb = props[i].extent
+#    if arb > 0.65: lal[lal==i+1] = 0
+#                      
+##    print(i+1, arb)
+#fibra3 = skeletonize(binary_closing(lal>0,disk(5)))
+#t2 = time()
+#print(t2-t1)
+
+lph = -lp*(lp<0)
+#sas = hessian(lph,mode='nearest')
+#lal = label(binary_erosion(sas>0.8,disk(1)))  #sas>0.8)
+#props = regionprops(lal)
+#for i in range(np.max(lal)):
+#    arb = props[i].extent
+#    if arb > 0.3: lal[lal==i+1] = 0
+##lap = np.pad(lal,(20,20))
+##hg = dilation(lap>0,disk(7))
+##hg = binary_closing(lap>0,disk(1))
+#fibr = skeletonize(dilation(lal>0),method='lee')
+#fib = fibr[:,:]>0
+#kernel = np.array([[1,1,1],
+#                   [1,1,1],
+#                   [1,1,1]])
+#cf = convolve2d(fib,kernel) # hago la convolución
+#convolved_fibra = cf[1:-1,1:-1] * fib
+#fic = fib * (convolved_fibra<4)
+#lol = label(fic)
+#props = regionprops(lol)
+#for i in range(np.max(lol)):
+#    arb = props[i].area
+##    print(i+1, arb)
+#    if arb < 7: lol[lol==i+1] = 0
+##fibi = ( fib * (lol + (convolved_fibra>3)) )>0
+#fibi = ( fib * lol )>0
+#fibra = skeletonize(dilation(fibi,disk(3)))
+#fre = pcv.morphology.skeletonize(lal>0)
+#ps, si, so = pcv.morphology.prune(fibr,size=20)
+#fib = skeletonize(ps>0)
+#t2 = time()
+#print(t2-t1)
+
+lpm = lph[:,:]
+lpme, lpst = np.mean(lph),np.std(lph)
+#print(lpme,lpst)
+lpm[lph < lpme-lpst] = np.mean(lph)
+fgg = gaussian(lpm,3)
+#err = frangi(-fgg) 
+#ert = err/np.max(err)
+#er2 = ert**2/np.max(ert**2)
+##print(np.mean(er2),np.std(er2))
+#ske = skeletonize(er2 > np.mean(er2)/2) #+ np.std(er2))
+#lal = label(ske)
+#props = regionprops(lal)
+#for i in range(np.max(lal)):
+#    arb = props[i].extent
+##    print(i+1,arb)
+##    if arb > 0.1: lal[lal==i+1] = 0
+#fib = lal>0
+
+
+lkj = (fgg -gaussian(fgg,30))
+rfm = frangi(-lkj)
+rfg = rfm/np.max(rfm)
+muu,stt = np.mean(rfg), np.std(rfg)
+#print(muu,stt)
+ske = skeletonize(rfg > muu+stt*1.3)
+lal = label(ske)
 props = regionprops(lal)
 for i in range(np.max(lal)):
-    ar = props[i].area
     arb = props[i].extent
-    if arb > 0.3: lal[lal==i+1] = 0                     
-lt = binary_closing(lal>0,disk(5)) #sato(-gaussian(lr,2),mode='constant') > 0.2
-fibra3 = skeletonize(lt)#lal>0
-t2 = time()
-print('3:',t2-t1)
+    print(i+1,arb)
+    if arb > 0.05: lal[lal==i+1] = 0
+fib = lal>0
 
-#plt.figure()
-#plt.imshow( fibra1 )
-#plt.show()
-#plt.figure()
-#plt.imshow( fibra2 )
-#plt.show()
 plt.figure()
-plt.imshow( fibra3 )
+plt.imshow( fib )
 plt.show()
 #%%
 t1 = time()
 bb = [210,570,440,810]  #[210:440,570:810] 1800
 #bb = [0,250,60,520] #[0:60,250:520] 800
 
-tramos,bordes = spl.cortar_fibra_rap(fibra3,bb,cortar_ruido=True)
-print(tramos)
-if len(tramos) > 1:
+tramos,bordes = spl.cortar_fibra_rap(fib,bb,cortar_ruido=True)
+if len(tramos) > 1 and len(bordes) > 2:
     print('b',len(tramos))
     d0 = 1e6
     for i in range(len(bordes)):
@@ -401,12 +510,15 @@ if len(tramos) > 1:
     conca = tuple([tramos[k] for k in range(len(tramos))])
     tramos = [np.concatenate(conca)]
     bo = np.delete(bordes,[n,m],axis=0)
+    nnei = 30
 else:
     print('a')
+    nnei = 2
     bo = bordes
 
-tramos = ordenar_fibra(tramos,bo)
-curv,spline = spl.pegar_fibra(tramos,bo,window=21,s=20)
+
+tramos = ordenar_fibra(tramos,bo,nnei)
+curv,spline = spl.pegar_fibra(tramos,bo,window=27,s=25)
 t2 = time()
 print(t2-t1)
 
@@ -421,21 +533,17 @@ plt.figure()
 plt.imshow(b)
 plt.plot()
 #%%
-ol = [1,2,3,4,5]
-ol.remove(1)
-ol
-#%%
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
-def ordenar_tramo_rap(tramo,bor):
+def ordenar_tramo_rap(tramo,bor,n_nei):
     ii = []
     for i in range(len(bor[0])):
         ind = np.where((tramo[:,0] == bor[i][0]) & (tramo[:,1] == bor[i][1]))
-        ii.append(int(ind[0]))
+        if len(ind[0]) != 0: ii.append(int(ind[0]))
     pp = (list(tramo[ii[0]]), list(tramo[0]))
     tramo[0], tramo[ii[0]] = pp
-    clf = NearestNeighbors(n_neighbors=50).fit(tramo)
+    clf = NearestNeighbors(n_neighbors=n_nei).fit(tramo)
     G = clf.kneighbors_graph()
     T = nx.from_scipy_sparse_matrix(G)
     
@@ -444,11 +552,11 @@ def ordenar_tramo_rap(tramo,bor):
     tra_ord = tramo[order]
     return(tra_ord)
 
-def ordenar_fibra(tramos, bor):
+def ordenar_fibra(tramos, bor, n_nei):
     fibra = []
     for i in range(len(tramos)):
         tramo = tramos[i]
         if len(tramo) > 2:
-            tramo = ordenar_tramo_rap(tramo, bor)
+            tramo = ordenar_tramo_rap(tramo, bor, n_nei)
         fibra.append(tramo)
     return fibra
