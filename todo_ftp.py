@@ -49,7 +49,7 @@ rec = np.cos(w*x + 1.5) * 75
 thx,thy, ns = 0.25, 45, 0.75 #0.5, 80, 0.5
 t1 = time()
 dphs = np.zeros((100,1024,1024))
-for num in range(1,20):
+for num in range(1, 20):
     if num%10 == 0: print(num, end=' ')
     ni = '{:04d}'.format(num)
     ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0001/ID_0_C1S000100'+ni+'.tif')
@@ -71,45 +71,16 @@ alturas = []
 for frame in alt:
     alturas.append(frame - np.mean(frame))
 
-alturas = np.array(alturas)
+alturas = np.array(alturas) #[t, x, y]
 del(alt)
 
 #%%
-#Ahora los hsitogramas
-#Primero de las velocidades
-v_un_frame = np.shape((alturas[1] - alturas[0]).flatten())[0] #Cantidad de velocidades por frame
-n_frames = len(alturas)
-v = np.zeros(v_un_frame*n_frames) #array que va a tener la velocidad de cada punto de todos los frames
+#Calculo la energía E = |fft(h)|**2
+E = np.abs(np.fft.fftn(alturas[:10]))**2 #[w, kx, ky]
 
-for i, im in enumerate(alturas):
-    i = i + 1
-    if i == len(alturas):
-        break
-    velocidad = (250*(alturas[i]-im)).flatten()
-    inic =  (i-1)*v_un_frame
-    fin = i*v_un_frame
-    v[inic:fin] = velocidad
-    del(velocidad, inic, fin)
-
-plt.hist(v, bins=100, density=True, edgecolor="black")
-plt.grid()
-plt.title('Histograma de Velocidades')
-plt.show()
-
-#Ahora con las aceleraciones
-a = np.zeros(v_un_frame*n_frames)
-
-for i in range(1, len(alturas)-1):
-    aceleracion = (250**2)*(alturas[i+1]-2*alturas[i]+alturas[i-1])
-    aceleracion = aceleracion.flatten()
-    inic =  (i-1)*v_un_frame
-    fin = i*v_un_frame
-    a[inic:fin] = aceleracion
-    del(aceleracion, inic, fin)
-
-#%%
-#Hago el histograma de aceleración
-plt.hist(v, bins=100, density=True, edgecolor="black")
-plt.grid()
-plt.title('Histograma de Aceleración')
-plt.show()
+#Promedio en w
+def cart2pol(x, y):
+    rho = np.sqrt(x**2 + y**2)
+    phi = np.arctan2(y, x)
+    return(rho, phi)
+    
