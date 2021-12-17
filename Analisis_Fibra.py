@@ -109,7 +109,7 @@ def conectar_tramo(tramos,bordes,imprimir=False):
 
 
 #%%
-num = 1194
+num = 1700
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
@@ -124,7 +124,7 @@ im = np.array(ima,dtype='float')
 #imr = im[850:1024,650:850] #2700
 #imr = im[0:70,220:550] #819
 #imr = im[0:100, 220:510] # 750
-imr = im[3:285,477:668]
+imr = im[220:470,550:800]
 
 plt.figure()
 plt.imshow(im)
@@ -190,9 +190,12 @@ plt.show()
 #==============================================================================
 t1 = time()
 splines = []
-bb = [0,100,220,510]
+#bb = [0,100,220,510] #para 760
+#bb = [0,268,418,659] #para 1100
+#bb = [80,370,550,750] #para 1500
+bb = [220,470,550,800] #para 1700
 bbt = [bb]
-for num in range(760,1400):
+for num in range(1700,1800):
     ni = '{:04d}'.format(num)
     ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
     #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
@@ -201,10 +204,27 @@ for num in range(760,1400):
     if num%30 == 0: print(num,end=' ')
     
     try:
-        stdmul = 1.9
-        if num in range(1308,1312): stdmul=1.6
-        if num in range(1312,1330): stdmul=1
-        fib, imr, bbn = encontrar_fibra2(im,bb,std_mul=stdmul,prun=20)
+        stdmul, disc, mmax, tama, tti = 1.7, 10, 0.8, 145, 'wrap'
+        if num in [899,900]: mmax=1.8
+
+#        if num in range(1175,1180): mmax = 1.5 
+#        if num in range(1190,1312): stdmul=1.2
+#        if num in [1308,1309]: mmax = 0
+#        if num in range(1312,1368): stdmul=1
+#        if num == 142: disc,mmax = 15,1.1
+#        if num == 143: 
+#            splines.append(spline)
+#            continue
+#        if num in range(1368,1395): stdmul,disc=1, 15
+#        if num in range(1395,1500): stdmul,disc=0.9, 15
+#        if num in range(1368,1500): stdmul, disc= 1.05, 15
+
+#        if num >= 1500: mmax,stdmul,disc,tti,tama = -0.1,0.5,11,'mirror',90
+#        if num == 1565: mmax = 2
+#        if num >=1589: stdmul = 0.7
+        
+        fib,imr,bbn = encontrar_fibra2(im,bb,std_mul=stdmul,prun=20,disco=disc,mulm=mmax,tama=tama,tipog=tti)
+        fib,imr,bbn = encontrar_fibra(im,bb,prun=50,std_mul=1.3)
         tramos,bordes = spl.cortar_fibra_rap(fib,bbn,cortar_ruido=True)
         tr, bo, nnei = conectar_tramo(tramos,bordes,imprimir=False)
         tramos = spl.ordenar_fibra(tramos)
@@ -223,9 +243,9 @@ for num in range(760,1400):
 t2 = time()
 print(t2-t1)
 #%%
-n = -760 + 1330
+n = 97 #-1100 + 1108
 print(bbt[n])
-ni = '{:04d}'.format(760+n)
+ni = '{:04d}'.format(1700+n)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float')
@@ -275,13 +295,13 @@ def largo_fib(xf,yf):
 # Pruebo fibras que fallen
 #==============================================================================
 #num = 2450
-#num = 1194
-num = 1330 #64,98,426,427
+#num = 800
+num = 1700+97 #64,98,426,427
 
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
-im = np.array(ima,dtype='float')
+im = np.array(ima,dtype='float') 
 
 plt.figure()
 plt.imshow(im)
@@ -290,47 +310,26 @@ plt.show()
 #bb = [0,126,227,531] # 819
 #bb = [400,700,600,830] #2450
 #bb = [0,250,380,600] #987
+#bb = [210,440,570,810] #1800 
 #bb = [0, 187, 311, 598]
-#bb = bbt[-1]
-bb = bbt[1330-760]
+bb = bbt[97]
+#bb = bbt[1108-1100]
 
 imr = im[bb[0]:bb[1],bb[2]:bb[3]]
 a = gabor(imr,0.1)
 b = imr - 2*(a[0]-np.min(a[0]) + 10)
-c = gaussian(b,0.7,mode='wrap')
+c = gaussian(b,0.7,mode='mirror')
 lp = adjust_log(c,1) - 9
 lph = -lp*(lp<0)
 
 lpm = lph[:,:]
 lpme, lpst = np.mean(lph),np.std(lph)
 lpm[lph < lpme-lpst] = np.mean(lph)
-fgg = gaussian(lpm,3,mode='wrap')
-lkj = (fgg -gaussian(fgg,30,mode='wrap'))
+fgg = gaussian(lpm,3,mode='mirror')
+lkj = (fgg -gaussian(fgg,30,mode='mirror'))
 
 rfm = frangi(-lkj)
 rfg = rfm/np.max(rfm)
-muu,stt = np.mean(rfg), np.std(rfg)
-ske = skeletonize(rfg > muu+stt*1.6)
-lal = label(ske)
-props = regionprops(lal)
-for i in range(np.max(lal)):
-    arb = props[i].bbox
-    ar = props[i].orientation
-    are = (arb[2]-arb[0]) * (arb[3]-arb[1]) 
-    arre = props[i].extent
-    print(i+1,'\t',ar,'\t',arre)
-#    if arre > 0.21 or ar > -0.45: lal[lal==i+1] = 0
-#fre = pcv.morphology.skeletonize(lal>0)
-#fibi, si,so = pcv.morphology.prune(fre,size=50)
-
-#lfib = np.where(fib) 
-#yma, xma = np.max(lfib[0]),np.max(lfib[1])
-#ymi, xmi = np.min(lfib[0]),np.min(lfib[1])
-#
-#xmax, ymax = min(1023,xma+bb[2]+1), min(1023,yma+bb[0]+1) 
-#xmin, ymin = max(0,xmi+bb[2]), max(0,ymi+bb[0])
-#bbs = [ymin,xmin,ymax,xmax]
-#fii = fib[ymi:yma+1,xmi:xma+1]
 
 plt.figure()
 plt.imshow(imr)
@@ -339,10 +338,11 @@ plt.figure()
 plt.imshow( rfg )
 plt.show()
 #%%
-ghj = enhance_contrast(img_as_ubyte(rfg),disk(7))
+ghj = enhance_contrast(img_as_ubyte(rfg),disk(11))
 mme, sst = np.mean(ghj), np.std(ghj)
 
-kse = (ghj > mme+sst*1)
+stmul = 1.7
+kse = (ghj > mme+sst*stmul)
 kse[:,:5] =  np.zeros_like(kse[:,:5])
 kse[:,-5:] =  np.zeros_like(kse[:,-5:])
 lal = label( kse )
@@ -352,61 +352,88 @@ plt.figure()
 plt.imshow(ghj)
 plt.show()
 plt.figure()
-plt.imshow( kse )
+plt.imshow( kse*ghj )
 plt.show()
 plt.figure()
 plt.imshow(lal)
 plt.show()
 
+tyh = kse*ghj
+print( np.mean(tyh[tyh>0]), np.std(tyh[tyh>0]), np.median(tyh[tyh>0]) )
+mmaxx = np.mean(tyh[tyh>0]) - np.std(tyh[tyh>0]) * (-0.1)
 for i in range(np.max(lal)):
     arb = props[i].area
     ar = props[i].orientation
 #    are = (arb[2]-arb[0]) * (arb[3]-arb[1]) 
-    arre = props[i].extent
-    print(i+1,'\t',arb,'\t',arre)
+#    arre = props[i].intensity_max
+    arre = np.max(tyh[lal==i+1])
+    print(i+1,'\t',ar,'\t',arre)
 #    if arre > 0.21 or np.abs(ar)<0.1: lal[lal==i+1] = 0
-    if arb<100 or np.abs(ar)<0.1: lal[lal==i+1] = 0
+#    if arb<100 or np.abs(ar)<0.1: lal[lal==i+1] = 0
+    if not (arb > 90 and arre > mmaxx and np.abs(ar)>0.07): lal[lal==i+1] = 0
 fre = pcv.morphology.skeletonize(lal>0)
 fib, si,so = pcv.morphology.prune(fre,size=20)
 
 plt.figure()
-plt.imshow(fib)
+plt.imshow(fib>0)
 plt.show()
 #%%
-def encontrar_fibra2(im,bb,prun=50,std_mul=2):
+tramos,bordes = spl.cortar_fibra_rap(fib>0,bb,cortar_ruido=False)
+tr, bo, nnei = conectar_tramo(tramos,bordes,imprimir=False)
+tramos = spl.ordenar_fibra(tramos)
+curv,spline = spl.pegar_fibra(tramos,bo,window=27,s=25)
+
+t_spl = np.linspace(0, 1, 10000)
+xf, yf = splev(t_spl, spline)
+
+#plt.figure()
+#plt.imshow(im)
+#plt.colorbar()
+#plt.show()
+plt.figure()
+plt.imshow(im)
+plt.plot(xf, yf, 'r-')
+plt.show()
+
+#%%
+def encontrar_fibra2(im,bb,prun=20,std_mul=2,disco=7,mulm=0.8,tama=145,tipog='wrap'):
     imr = im[bb[0]:bb[1],bb[2]:bb[3]]
     a = gabor(imr,0.1)
     b = imr - 2*(a[0]-np.min(a[0]) + 10)
-    c = gaussian(b,0.7,mode='wrap')
+    c = gaussian(b,0.7,mode=tipog)
     lp = adjust_log(c,1) - 9
     lph = -lp*(lp<0)
     
     lpm = lph[:,:]
     lpme, lpst = np.mean(lph),np.std(lph)
     lpm[lph < lpme-lpst] = np.mean(lph)
-    fgg = gaussian(lpm,3,mode='wrap')
-    lkj = (fgg -gaussian(fgg,30,mode='wrap'))
+    fgg = gaussian(lpm,3,mode=tipog)
+    lkj = (fgg -gaussian(fgg,30,mode=tipog))
     
 
     rfm = frangi(-lkj)
     rfg = rfm/np.max(rfm)
 
-    ghj = enhance_contrast( img_as_ubyte(rfg) ,disk(7))
+    ghj = enhance_contrast( img_as_ubyte(rfg) ,disk(disco))
     mme, sst = np.mean(ghj), np.std(ghj)
     
 #    kse = skeletonize(ghj > mme+sst*std_mul)
     kse = (ghj > mme+sst*std_mul)
     kse[:,:5] =  np.zeros_like(kse[:,:5])
     kse[:,-5:] =  np.zeros_like(kse[:,-5:])
+    tyh = kse*ghj
+    mmaxx = np.mean(tyh[tyh>0]) - np.std(tyh[tyh>0]) * mulm
     lal = label( kse )
     props = regionprops(lal)
     for i in range(np.max(lal)):
-        arre = props[i].extent
-        ar = props[i].orientation
+#        arre = props[i].extent
+        ori = props[i].orientation
         arb = props[i].area
+        mma = np.max(tyh[lal==i+1])
 #        print(i+1,'\t',arre,'\t',arb)
 #        if arre > 0.21 or np.abs(ar)<0.2 : lal[lal==i+1] = 0
-        if arb < 150 or np.abs(ar)<0.1 or arre>0.67: lal[lal==i+1] = 0
+#        if arb < 150 or np.abs(ori)<0.1 or arre>0.67: lal[lal==i+1] = 0
+        if not (arb > tama and mma > mmaxx and np.abs(ori)>0.07): lal[lal==i+1] = 0
 
 #    fib = lal>0
     fre = pcv.morphology.skeletonize(lal>0)
