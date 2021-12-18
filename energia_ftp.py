@@ -12,13 +12,13 @@ from skimage.transform import warp_polar
 #Paso de un array de la forma (t, x, y) a otro que sea (t, kx, ky)
 with h5py.File('18-12-2021_fourier_alturas_t.hdf5', 'w') as f:
     fourier_im = f.create_group('fi')
-    transs = fourier_im.create_dataset('trans', shape=(3072,1024,1024), dtype='complex')
+    transs = fourier_im.create_dataset('trans', shape=(1004,1004, 3072), dtype='complex')
     with h5py.File('18-12-2021_ftp.hdf5', 'r') as f:
         gdp = f.get('hs')
         alturas = gdp['alts']
         for i, j in zip(range(len(alturas)), tqdm(range(len(alturas)))):
-            transformada = np.fft.fft2(alturas[i])
-            transs[i] = transformada
+            transformada = np.fft.fft2(alturas[i][10:-10, 10:-10])
+            transs[:, :, i] = transformada
             del(transformada)
 
 #%%
@@ -26,13 +26,13 @@ with h5py.File('18-12-2021_fourier_alturas_t.hdf5', 'w') as f:
 #Quedan cosas de la forma (w, kx, ky)
 with h5py.File('18-12-2021_fourier_alturas_w.hdf5', 'w') as f:
     omegas = f.create_group('omeg')
-    transs_w = omegas.create_dataset('trasn_w', shape=(3072,1024,1024), dtype='complex')
+    transs_w = omegas.create_dataset('trasn_w', shape=(1004, 1004, 3072), dtype='complex')
     with h5py.File('18-12-2021_fourier_alturas_t.hdf5', 'r') as f:
         gdp = f.get('fi')
         im_trans = gdp['trans']
-        for kx, i in zip(range(1024), tqdm(range(1024))):
-            for ky in range(1024):
-                transs_w[:, kx, ky] = np.fft.fft(im_trans[:, kx, ky])
+        for kx, i in zip(range(1004), tqdm(range(1004))):
+            for ky in range(1004):
+                transs_w[kx, ky, :] = np.fft.fft(im_trans[kx, ky, :])
 
 #%%
 #Traigo los hdf5 con las alturas transformadas y las paso a polares
