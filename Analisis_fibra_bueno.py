@@ -92,14 +92,14 @@ with h5py.File('fibra.hdf5', 'w') as f:
     h_splf = f.create_group('splines')
     dt = h5py.special_dtype(vlen=np.dtype('float64'))
     
-    h_t = h_splf.create_dataset('lista_splf_t',(40,),dtype=dt)
-    h_c1 = h_splf.create_dataset('lista_splf_c1',(40,),dtype=dt)
-    h_c2 = h_splf.create_dataset('lista_splf_c2',(40,),dtype=dt)
-    h_k = h_splf.create_dataset('lista_splf_k',(40,))
+    h_t = h_splf.create_dataset('lista_splf_t',(1921,),dtype=dt)
+    h_c1 = h_splf.create_dataset('lista_splf_c1',(1921,),dtype=dt)
+    h_c2 = h_splf.create_dataset('lista_splf_c2',(1921,),dtype=dt)
+    h_k = h_splf.create_dataset('lista_splf_k',(1921,))
 
     h_bor = f.create_group('bordes')
-    h_b1 = h_bor.create_dataset('lista_bordes1',(40,),dtype=dt)
-    h_b2 = h_bor.create_dataset('lista_bordes2',(40,),dtype=dt)
+    h_b1 = h_bor.create_dataset('lista_bordes1',(1921,),dtype=dt)
+    h_b2 = h_bor.create_dataset('lista_bordes2',(1921,),dtype=dt)
 
     splines, bordes = [], []
     
@@ -110,7 +110,7 @@ with h5py.File('fibra.hdf5', 'w') as f:
     #bb = [201,474,558,820] #para 1700, corre hasta 2100
     #bb = [332, 552, 525, 835] #para 2100, hasta 2531 (pareciera haber alguna ondulaciones)
     #entre 2531 y 2550 no pude distinguir la fibra de forma rapida
-    #bb = [650,850,650,900] #para 2550
+    #bb = [650,850,650,900] #para 2550, hasta 2700
     
 #    bbt = [bb]
     
@@ -119,23 +119,24 @@ with h5py.File('fibra.hdf5', 'w') as f:
     maxi3 = [1797,1875,2147]
     si0 = [2012,2014,2018,2019,2020,2199]
     
-    for num in range(760,800):
+    for num in range(760,2700):
         ni = '{:04d}'.format(num)
         ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
         #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
         im = np.array(ima,dtype='float')
         
-        if num%30 == 0: print(num,end=' ')
+        if num%50 == 0: print(num,end=' ')
         
         try:   
             sise,mima,dil = 150, 'min', True
             if num < 1000: dil=False
             if num in maxi: mima, sise = 'max', 30
+            if num == 1264: sise = 80
             if num in range(1300,1700): sise = 80
-            if num in range(1700,2100): sise=400
+            if num in range(1700,2100): sise = 400
             if num in maxi2: mima, sise = 'max', 350
             if num in maxi3: mima, sise = 'max', 150
-            if num in si0: sise = 0
+            if num in si0: mima,sise = 'min', 10
             if num in range(2515,2531): mima, sise = 'min', 900
             if num in range(2531,2550):
 #                splines.append(None)
@@ -224,7 +225,7 @@ plt.show()
 #==============================================================================
 # Probando 1 sola fibra 
 #==============================================================================
-num = 800
+num = 2018
 
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
@@ -235,7 +236,7 @@ bbns = {800:[0,60,250,550], 819:[0,70,220,550], 1242:[0,280,450,650], 824:[0,122
 828:[0,140,234,532], 760:[0,100,220,510], 1800:[210,440,570,810], 1243:[0,280,450,650],
 1308:[0, 300, 450, 650], 911:[0,197,326,627], 965:[0,257,364,597], 1300:[0,305,484,656]}
 
-bb = bbns[num]
+#bb = bbns[num]
 #bb = bbt[num-2550]
 #bb = bbt[-1]
 #bb = [650,850,650,900]
@@ -276,20 +277,20 @@ fa3 = (fma/np.max(fma))**3
 ma,sa = np.mean(fa3), np.std(fa3)
 mi,si = np.mean(fi3), np.std(fi3)
 print(mi,si)
-rmo = remove_small_objects(fi3 > si/3 , min_size=180)
-rma = remove_small_objects(fa3 > sa/3 , min_size=310)
+rmo = remove_small_objects(fi3 > si/3 , min_size=10)
+rma = remove_small_objects(fa3 > sa/3 , min_size=30)
 
 nd = 1
-ytr = dilation(rmo,disk(nd))
+ytr = dilation(rma,disk(nd))
 
 plt.figure()
-plt.imshow( skeletonize(ytr) )
+plt.imshow( rma )
 #plt.colorbar()
 plt.show()
-#plt.figure()
-#plt.imshow( dilation(rma,disk(3)) )
-##plt.colorbar()
-#plt.show()
+plt.figure()
+plt.imshow( rmo )
+#plt.colorbar()
+plt.show()
 #plt.figure()
 #plt.imshow( mea )
 ##plt.colorbar()
@@ -310,7 +311,6 @@ with h5py.File('fibra.hdf5', 'r') as f:
     b1_h,b2_h = gbor['lista_bordes1'], gbor['lista_bordes2']
         
     for i in range(len(tf_h)):
-#        imag.append(im_h[i])
         splif.append([tf_h[i],[c1f_h[i],c2f_h[i]],kf_h[i]])
         bor.append(np.array([b1_h[i],b2_h[i]]))
 #%%
@@ -334,3 +334,73 @@ plt.imshow(im)
 plt.plot(xf, yf, 'r-')
 plt.plot(xb, yb, 'ko')
 plt.show()
+#%%
+#Veo largos de todas las fibras
+t_spl = np.linspace(0,1,1000)
+largos = []
+with h5py.File('fibra.hdf5', 'r') as f:  
+    gspf = f.get('splines')
+    tf_h, kf_h = gspf['lista_splf_t'], gspf['lista_splf_k']
+    c1f_h, c2f_h = gspf['lista_splf_c1'], gspf['lista_splf_c2'] 
+    
+    gbor = f.get('bordes')
+    b1_h,b2_h = gbor['lista_bordes1'], gbor['lista_bordes2']
+        
+    for i in range(len(tf_h)):
+        splif = [tf_h[i],[c1f_h[i],c2f_h[i]],kf_h[i]]
+        xf, yf = splev(t_spl, splif)
+        lar = largo_fib(xf,yf)
+        largos.append(lar)
+#        bor.append(np.array([b1_h[i],b2_h[i]]))
+#%%
+xs = np.arange(760,2700)
+dele = np.arange(2531,2550) - 760
+xs = np.delete(xs,dele)
+
+plt.figure()
+plt.plot(xs,largos,'-o')
+plt.grid()
+plt.show()
+#%%
+largos = np.array(largos)
+xsc1 = xs[ (largos<270)]
+larc1 = largos[(largos<270)]
+xsc = xsc1[larc1>250]
+larc = larc1[larc1>250]
+    
+plt.figure()
+plt.plot(xsc,larc,'-o')
+plt.grid()
+plt.show()
+
+#%%
+with h5py.File('fibra.hdf5', 'r') as f:  
+    gspf = f.get('splines')
+    tf_h, kf_h = gspf['lista_splf_t'], gspf['lista_splf_k']
+    c1f_h, c2f_h = gspf['lista_splf_c1'], gspf['lista_splf_c2'] 
+    
+    gbor = f.get('bordes')
+    b1_h,b2_h = gbor['lista_bordes1'], gbor['lista_bordes2']
+    
+    n = 896 - 760
+    ni = '{:04d}'.format(760+n)
+    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
+    #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
+    im = np.array(ima,dtype='float')
+    
+    splif = [tf_h[n],[c1f_h[n],c2f_h[n]],kf_h[n]]
+        
+    t_spl = np.linspace(0,1,1000)
+    xf, yf = splev(t_spl, splif)
+
+    plt.figure()
+    plt.imshow(im)
+    plt.colorbar()
+    plt.show()
+    plt.figure()
+    plt.imshow(im)
+    plt.plot(xf, yf, 'r-')
+    plt.show()
+#%%
+
+
