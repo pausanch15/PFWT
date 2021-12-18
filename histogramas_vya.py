@@ -54,14 +54,17 @@ plt.show()
 #Ahora con las aceleraciones
 a = np.zeros(v_un_frame*n_frames)
 
-for i in range(1, len(alturas)-1):
-    dp1 = h_dp[i][10:-10,10:-10]
-    dp0 = h_dp[i-1][10:-10,10:-10]
-    dp2 = h_dp[i+1][10:-10,10:-10]
-    aceleracion = (250**2)*(dp2-2*dp0+dp1)
-    aceleracion = aceleracion.flatten()
-    his, bins = np.histogram(aceleracion, bins=binis)
-    del(aceleracion, inic, fin)
+with h5py.File(ftp_hdf, 'r') as f:
+    gdp = f.get('dif_phase')
+    h_dp = gdp['dp']
+    for i, j in zip(range(1,len(h_dp)), tqdm(range(1,len(h_dp)))):
+        dp1 = h_dp[i][10:-10,10:-10]
+        dp0 = h_dp[i-1][10:-10,10:-10]
+        dp2 = h_dp[i+1][10:-10,10:-10]
+        aceleracion = (250**2)*(dp2-2*dp0+dp1)
+        aceleracion = aceleracion.flatten()
+        his, bins = np.histogram(aceleracion, bins=binis)
+        del(aceleracion, dp1, dp0, dp2)
 
 #Hago el histograma de aceleración
 norm = np.sum(H)
