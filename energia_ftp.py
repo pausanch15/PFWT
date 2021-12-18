@@ -26,7 +26,7 @@ with h5py.File('18-12-2021_fourier_alturas_t.hdf5', 'w') as f:
 #Quedan cosas de la forma (w, kx, ky)
 with h5py.File('18-12-2021_fourier_alturas_w.hdf5', 'w') as f:
     omegas = f.create_group('omeg')
-    transs_w = omegas.create_dataset('trasn_w', shape=(3072,360,725), dtype='complex')
+    transs_w = omegas.create_dataset('trasn_w', shape=(3072,1024,1024), dtype='complex')
     with h5py.File('18-12-2021_fourier_alturas_t.hdf5', 'r') as f:
         gdp = f.get('fi')
         im_trans = gdp['trans']
