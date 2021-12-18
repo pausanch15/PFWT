@@ -1,13 +1,11 @@
-#Librerías
+#Archivo que crea los hdf5 de las alturas
 import numpy as np
-import matplotlib.pyplot as plt
 import Func_Splines as spl
 import Continuacion_Fourier as cf
 from skimage.io import imread
 from scipy.interpolate import splev
-from time import time
 import h5py 
-plt.ion()
+from tqdm import tqdm
 
 #%%
 #Traigo imagenes
@@ -52,11 +50,10 @@ thx,thy, ns = 0.25, 45, 0.75 #0.5, 80, 0.5
 w = 2*np.pi/d
 L, D = 79.6, 20.3
 
-# dphs = np.zeros((3072,1024,1024))
 with h5py.File('18-12-2021_ftp.hdf5', 'w') as f:
     h_im = f.create_group('hs')
-    alt = h_im.create_dataset('alts', shape=(150,1024,1024))
-    for num, i in zip(range(1, 151), tqdm(range(1, 151))):
+    alt = h_im.create_dataset('alts', shape=(3072,1024,1024))
+    for num, i in zip(range(1, 3073), tqdm(range(1, 3073))):
         ni = '{:04d}'.format(num)
         ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0001/ID_0_C1S000100'+ni+'.tif')
         # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
@@ -65,73 +62,3 @@ with h5py.File('18-12-2021_ftp.hdf5', 'w') as f:
         altura = (L*dph) / (dph - w*D)
         alt[num-1] = altura - np.mean(altura)
         del(ni, ima, im, altura)
-
-#%%
-#Traigo los hdf5
-alturas = []
-ftp_hdf = r'/home/paula/Documents/Fisica2021/L6y7/PFWT/18-12-2021_ftp.hdf5'
-
-with h5py.File(ftp_hdf, 'r') as f:
-    gdp = f.get('hs')
-    h_dp = gdp['alts']
-    for i in range(len(h_dp)):
-        alturas.append(h_dp[i])
-
-#%%
-#Ahora los hsitogramas
-#Primero el de las alturas
-h_un_frame = 1024*1024 #Cantidad dealturas por frame
-n_frames = len(alturas)
-hs = np.zeros(h_un_frame*n_frames) #array que va a tener la velocidad de cada punto de todos los frames
-
-for i, im in enumerate(alturas):
-    i = i + 1
-    if i == len(alturas):
-        break
-    h = im.flatten()
-    inic =  (i-1)*h_un_frame
-    fin = i*h_un_frame
-    hs[inic:fin] = h
-    del(h, inic, fin)
-
-plt.hist(hs, bins=100, density=True, edgecolor="black")
-plt.grid()
-plt.title('Histograma de Alturas')
-plt.show()
-
-#Ahora de las velocidades
-v_un_frame = np.shape((alturas[1] - alturas[0]).flatten())[0] #Cantidad de velocidades por frame
-n_frames = len(alturas)
-v = np.zeros(v_un_frame*n_frames) #array que va a tener la velocidad de cada punto de todos los frames
-
-for i, im in enumerate(alturas):
-    i = i + 1
-    if i == len(alturas):
-        break
-    velocidad = (250*(alturas[i]-im)).flatten()
-    inic =  (i-1)*v_un_frame
-    fin = i*v_un_frame
-    v[inic:fin] = velocidad
-    del(velocidad, inic, fin)
-
-plt.hist(v, bins=100, density=True, edgecolor="black")
-plt.grid()
-plt.title('Histograma de Velocidades')
-plt.show()
-
-#Ahora con las aceleraciones
-a = np.zeros(v_un_frame*n_frames)
-
-for i in range(1, len(alturas)-1):
-    aceleracion = (250**2)*(alturas[i+1]-2*alturas[i]+alturas[i-1])
-    aceleracion = aceleracion.flatten()
-    inic =  (i-1)*v_un_frame
-    fin = i*v_un_frame
-    a[inic:fin] = aceleracion
-    del(aceleracion, inic, fin)
-
-#Hago el histograma de aceleración
-plt.hist(v, bins=100, density=True, edgecolor="black")
-plt.grid()
-plt.title('Histograma de Aceleración')
-plt.show()
