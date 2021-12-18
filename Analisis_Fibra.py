@@ -295,8 +295,8 @@ def largo_fib(xf,yf):
 #==============================================================================
 # Pruebo fibras que fallen
 #==============================================================================
-num = 1800
-#num = 819
+num = 800
+#num = 1308
 #num = 1100+208 #1100+75 #64,98,426,427
 
 ni = '{:04d}'.format(num)
@@ -311,9 +311,10 @@ plt.show()
 #%%
 #bb = [0,126,227,531] # 819
 #bb = [400,700,600,830] #2450
-#bb = [0,250,380,600] #987
-bb = [210,440,570,810] #1800 
-#bb = [0, 187, 311, 598]
+#bb = [0,280,450,650] #1242
+#bb = [210,440,570,810] #1800 
+#bb = [0, 300, 500, 650] #1308
+bb = [0,70,250,520]
 #bb = bbt[208]
 #bb = bbt[1242-1100]
 
@@ -335,8 +336,8 @@ imr = im[bb[0]:bb[1],bb[2]-40:bb[3]+40]
 #rfm = frangi(-lkj)
 #rfg = rfm/np.max(rfm)
 
-#from scipy.signal import hilbert, find_peaks
-#from scipy.interpolate import CubicSpline, splev, splrep, splprep
+from scipy.signal import hilbert, find_peaks
+from scipy.interpolate import CubicSpline, splev, splrep, splprep
 
 
 #todo = np.zeros_like(imr)
@@ -366,16 +367,22 @@ ttt = th[1]+th[0]
 ggg = gaussian(ttt[:,40:-40],3) - gaussian(ttt[:,40:-40],5)
 hi = frangi(ggg)
 hii = hi / np.max(hi)
+mii = minimum(hi,np.array([[0,0,0],
+                           [1,1,1],
+                           [0,0,0]]))
+rso = remove_small_objects(mii>0,min_size=20)
+rbr = skeletonize(dilation(rso,disk(3)))
+
+#asw = a7[0] - a[0]
+##resy = asw * (asw<0)
+#resy = (asw-np.mean(asw)) / np.max(np.abs((asw-np.mean(asw))))
+##doo = gaussian(resy,3)-gaussian(resy,5)
 
 
-asw = a7[0] - a[0]
-resy = asw * (asw<0)
-
-#plt.figure()
-#plt.imshow( a7[0] )
-#plt.colorbar()
-#plt.clim(-50,150)
-#plt.show()
+plt.figure()
+plt.imshow( ttt )
+plt.colorbar()
+plt.show()
 #plt.figure()
 #plt.imshow( a[0] )
 #plt.colorbar()
@@ -383,7 +390,8 @@ resy = asw * (asw<0)
 #plt.show()
 
 plt.figure()
-plt.imshow( frangi(resy - gaussian(resy,3)) )
+plt.imshow( mii )
+#plt.colorbar()
 plt.show()
 
 #plt.figure()
