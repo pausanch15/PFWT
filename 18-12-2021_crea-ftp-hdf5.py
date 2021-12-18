@@ -12,8 +12,8 @@ from tqdm import tqdm
 gris = np.zeros((1024, 1024))
 for i in range(1, 16):
     ni = '{:04d}'.format(i)
-    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
-    # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0003\ID_0_C1S000300'+ni+'.tif')
+#    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
+    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0003\ID_0_C1S000300'+ni+'.tif')
     ima = np.array(ima, dtype='float')
     gris += ima
 gris = gris/15
@@ -21,8 +21,8 @@ gris = gris/15
 ref = np.zeros((1024, 1024))
 for i in range(1, 14):
     ni = '{:04d}'.format(i)
-    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0002/ID_0_C1S000300'+ni+'.tif')
-    # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0002\ID_0_C1S000300'+ni+'.tif')
+#    ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0002/ID_0_C1S000300'+ni+'.tif')
+    ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0002\ID_0_C1S000300'+ni+'.tif')
     ima = np.array(ima, dtype='float')
     ref += ima
 ref = ref/13
@@ -50,15 +50,20 @@ thx,thy, ns = 0.25, 45, 0.75 #0.5, 80, 0.5
 w = 2*np.pi/d
 L, D = 79.6, 20.3
 
-with h5py.File('18-12-2021_ftp.hdf5', 'w') as f:
+#with h5py.File('18-12-2021_ftp.hdf5', 'w') as f:
+with h5py.File('alturas.hdf5', 'w') as f: #le cambio el nombre para mi    
     h_im = f.create_group('hs')
     alt = h_im.create_dataset('alts', shape=(3072,1024,1024))
     for num, i in zip(range(1, 3073), tqdm(range(1, 3073))):
         ni = '{:04d}'.format(num)
-        ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0001/ID_0_C1S000100'+ni+'.tif')
-        # ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
+#        ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0001/ID_0_C1S000100'+ni+'.tif')
+        ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
         im = np.array(ima,dtype='float')
         dph, ft, gf = cf.dphase_2d(im,ref-gris,thx,thy,ns,inde=9)
         altura = (L*dph) / (dph - w*D)
         alt[num-1] = altura - np.mean(altura)
         del(ni, ima, im, altura)
+
+
+#%%
+
