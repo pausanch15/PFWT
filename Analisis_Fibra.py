@@ -191,11 +191,11 @@ plt.show()
 t1 = time()
 splines = []
 #bb = [0,100,220,510] #para 760
-#bb = [0,268,418,659] #para 1100
+bb = [0,268,418,659] #para 1100
 #bb = [80,370,550,750] #para 1500
-bb = [220,470,550,800] #para 1700
+#bb = [220,470,550,800] #para 1700
 bbt = [bb]
-for num in range(1700,1800):
+for num in range(1100,1400):
     ni = '{:04d}'.format(num)
     ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
     #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
@@ -207,7 +207,7 @@ for num in range(1700,1800):
         stdmul, disc, mmax, tama, tti = 1.7, 10, 0.8, 145, 'wrap'
         if num in [899,900]: mmax=1.8
 
-#        if num in range(1175,1180): mmax = 1.5 
+        if num in range(1175,1180): mmax = 1.5 
 #        if num in range(1190,1312): stdmul=1.2
 #        if num in [1308,1309]: mmax = 0
 #        if num in range(1312,1368): stdmul=1
@@ -224,7 +224,7 @@ for num in range(1700,1800):
 #        if num >=1589: stdmul = 0.7
         
         fib,imr,bbn = encontrar_fibra2(im,bb,std_mul=stdmul,prun=20,disco=disc,mulm=mmax,tama=tama,tipog=tti)
-        fib,imr,bbn = encontrar_fibra(im,bb,prun=50,std_mul=1.3)
+#        fib,imr,bbn = encontrar_fibra(im,bb,prun=50,std_mul=1.3)
         tramos,bordes = spl.cortar_fibra_rap(fib,bbn,cortar_ruido=True)
         tr, bo, nnei = conectar_tramo(tramos,bordes,imprimir=False)
         tramos = spl.ordenar_fibra(tramos)
@@ -243,15 +243,16 @@ for num in range(1700,1800):
 t2 = time()
 print(t2-t1)
 #%%
-n = 97 #-1100 + 1108
+n = -1100 + 1325
 print(bbt[n])
-ni = '{:04d}'.format(1700+n)
+ni = '{:04d}'.format(1100+n)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float')
 
-t_spl = np.linspace(0, 1, 10000)
-xf, yf = splev(t_spl, splines[n])
+    
+t_spl = np.linspace(0,1,100000)
+spline = splev(t_spl,spl)
 
 plt.figure()
 plt.imshow(im)
@@ -294,14 +295,15 @@ def largo_fib(xf,yf):
 #==============================================================================
 # Pruebo fibras que fallen
 #==============================================================================
-#num = 2450
-#num = 800
-num = 1700+97 #64,98,426,427
+num = 800
+#num = 1308
+#num = 1100+208 #1100+75 #64,98,426,427
 
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float') 
+
 
 plt.figure()
 plt.imshow(im)
@@ -309,42 +311,100 @@ plt.show()
 #%%
 #bb = [0,126,227,531] # 819
 #bb = [400,700,600,830] #2450
-#bb = [0,250,380,600] #987
+#bb = [0,280,450,650] #1242
 #bb = [210,440,570,810] #1800 
-#bb = [0, 187, 311, 598]
-bb = bbt[97]
-#bb = bbt[1108-1100]
+#bb = [0, 300, 500, 650] #1308
+bb = [0,70,250,520]
+#bb = bbt[208]
+#bb = bbt[1242-1100]
 
-imr = im[bb[0]:bb[1],bb[2]:bb[3]]
-a = gabor(imr,0.1)
-b = imr - 2*(a[0]-np.min(a[0]) + 10)
-c = gaussian(b,0.7,mode='mirror')
-lp = adjust_log(c,1) - 9
-lph = -lp*(lp<0)
+imr = im[bb[0]:bb[1],bb[2]-40:bb[3]+40]
+#a1 = imr - gaussian(imr,20)
+#a = gabor(a1,0.1,mode='mirror')
+#b = a1 - 2*(a[0]-np.min(a[0]) + 10)
+#c = gaussian(b,0.7,mode='wrap')
+#lp = adjust_log(c-np.min(c),1) - 9
+#itn = lp #- gaussian(lp,30)
+#lph = -itn*(itn<0)
+#
+#lpm = lph[:,:]
+#lpme, lpst = np.mean(lph),np.std(lph)
+#lpm[lph < lpme-lpst] = np.mean(lph)
+#fgg = gaussian(lpm,3,mode='mirror')
+#lkj = (fgg -gaussian(fgg,30,mode='mirror'))
+#
+#rfm = frangi(-lkj)
+#rfg = rfm/np.max(rfm)
 
-lpm = lph[:,:]
-lpme, lpst = np.mean(lph),np.std(lph)
-lpm[lph < lpme-lpst] = np.mean(lph)
-fgg = gaussian(lpm,3,mode='mirror')
-lkj = (fgg -gaussian(fgg,30,mode='mirror'))
+from scipy.signal import hilbert, find_peaks
+from scipy.interpolate import CubicSpline, splev, splrep, splprep
 
-rfm = frangi(-lkj)
-rfg = rfm/np.max(rfm)
+
+#todo = np.zeros_like(imr)
+#for i in range(bb[1]-bb[0] ):
+#    lin = ed[i,:] - np.mean(ed[i,:])
+#    x = np.arange(0,1024,1)
+#    a, _ = find_peaks(-lin,distance=10)
+#    
+#    spl = splrep(x[a],lin[a])
+#    xf = np.arange(0,imr.shape[1])
+#    yf = splev(xf,spl )
+#    todo[i,:] = yf
+
+#qsc = b - gaussian(b,50,mode='mirror')
+#ed = -sato(qsc)
+
+a1 = imr - gaussian(imr,20)
+a7 = gabor(a1,0.7)
+a = gabor(a1,0.1)
+b = a1 - 2*(a[0]-np.min(a[0]) + 10)
+c = b - gaussian(b,30,mode='mirror')
+d = gaussian(c,0.5)
+
+th = gabor(d*(d<0),0.7)
+ttt = th[1]+th[0]
+
+ggg = gaussian(ttt[:,40:-40],3) - gaussian(ttt[:,40:-40],5)
+hi = frangi(ggg)
+hii = hi / np.max(hi)
+mii = minimum(hi,np.array([[0,0,0],
+                           [1,1,1],
+                           [0,0,0]]))
+rso = remove_small_objects(mii>0,min_size=20)
+rbr = skeletonize(dilation(rso,disk(3)))
+
+#asw = a7[0] - a[0]
+##resy = asw * (asw<0)
+#resy = (asw-np.mean(asw)) / np.max(np.abs((asw-np.mean(asw))))
+##doo = gaussian(resy,3)-gaussian(resy,5)
+
 
 plt.figure()
-plt.imshow(imr)
+plt.imshow( ttt )
+plt.colorbar()
 plt.show()
+#plt.figure()
+#plt.imshow( a[0] )
+#plt.colorbar()
+#plt.clim(-50,150)
+#plt.show()
+
 plt.figure()
-plt.imshow( rfg )
+plt.imshow( mii )
+#plt.colorbar()
 plt.show()
+
+#plt.figure()
+#plt.hist(hii.flatten(), bins=50)
+#plt.show()
 #%%
 ghj = enhance_contrast(img_as_ubyte(rfg),disk(11))
 mme, sst = np.mean(ghj), np.std(ghj)
-
-stmul = 1.7
+print(mme, sst)
+stmul = 1
 kse = (ghj > mme+sst*stmul)
-kse[:,:5] =  np.zeros_like(kse[:,:5])
-kse[:,-5:] =  np.zeros_like(kse[:,-5:])
+kse[:,:40] =  np.zeros_like(kse[:,:40])
+kse[:,-40:] =  np.zeros_like(kse[:,-40:])
 lal = label( kse )
 props = regionprops(lal)
 
@@ -352,30 +412,44 @@ plt.figure()
 plt.imshow(ghj)
 plt.show()
 plt.figure()
-plt.imshow( kse*ghj )
+plt.imshow( kse )
 plt.show()
 plt.figure()
 plt.imshow(lal)
 plt.show()
-
-tyh = kse*ghj
-print( np.mean(tyh[tyh>0]), np.std(tyh[tyh>0]), np.median(tyh[tyh>0]) )
-mmaxx = np.mean(tyh[tyh>0]) - np.std(tyh[tyh>0]) * (-0.1)
-for i in range(np.max(lal)):
-    arb = props[i].area
-    ar = props[i].orientation
-#    are = (arb[2]-arb[0]) * (arb[3]-arb[1]) 
-#    arre = props[i].intensity_max
-    arre = np.max(tyh[lal==i+1])
-    print(i+1,'\t',ar,'\t',arre)
-#    if arre > 0.21 or np.abs(ar)<0.1: lal[lal==i+1] = 0
-#    if arb<100 or np.abs(ar)<0.1: lal[lal==i+1] = 0
-    if not (arb > 90 and arre > mmaxx and np.abs(ar)>0.07): lal[lal==i+1] = 0
-fre = pcv.morphology.skeletonize(lal>0)
-fib, si,so = pcv.morphology.prune(fre,size=20)
+plt.figure()
+plt.hist((ghj[ghj>0]).flatten(),bins=30)
+plt.show()
+#%%
+ertt = kse * rfg
 
 plt.figure()
-plt.imshow(fib>0)
+plt.imshow( ertt )
+plt.colorbar()
+plt.show()
+#%%
+
+#tyh = kse*ghj
+#print( np.mean(tyh[tyh>0]), np.std(tyh[tyh>0]), np.median(tyh[tyh>0]) )
+#mmaxx = np.mean(tyh[tyh>0]) - np.std(tyh[tyh>0]) * 1
+#for i in range(np.max(lal)):
+#    arb = props[i].area
+#    ar = props[i].orientation
+##    are = (arb[2]-arb[0]) * (arb[3]-arb[1]) 
+##    arre = props[i].intensity_max
+#    arre = np.max(tyh[lal==i+1])
+#    print(i+1,'\t',ar,'\t',arre)
+##    if arre > 0.21 or np.abs(ar)<0.1: lal[lal==i+1] = 0
+##    if arb<100 or np.abs(ar)<0.1: lal[lal==i+1] = 0
+#    if not (arb > 0 and arre > 0 and np.abs(ar)>0): lal[lal==i+1] = 0
+#fre = pcv.morphology.skeletonize(lal>0)
+#fib, si,so = pcv.morphology.prune(fre,size=20)
+
+#fib = skeletonize(dilation(lal>0,disk(15)))
+#fib = skeletonize(binary_closing(lal>0,disk(50)))
+
+plt.figure()
+plt.imshow( fib )
 plt.show()
 #%%
 tramos,bordes = spl.cortar_fibra_rap(fib>0,bb,cortar_ruido=False)
