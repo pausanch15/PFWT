@@ -225,18 +225,18 @@ plt.show()
 #==============================================================================
 # Probando 1 sola fibra 
 #==============================================================================
-num = 2018
+num = 1799
 
 ni = '{:04d}'.format(num)
 ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
 #ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
 im = np.array(ima,dtype='float') 
 
-bbns = {800:[0,60,250,550], 819:[0,70,220,550], 1242:[0,280,450,650], 824:[0,122,224,524],
+bbns = {800:[0,60,250,520], 819:[0,70,220,550], 1242:[0,280,450,650], 824:[0,122,224,524],
 828:[0,140,234,532], 760:[0,100,220,510], 1800:[210,440,570,810], 1243:[0,280,450,650],
 1308:[0, 300, 450, 650], 911:[0,197,326,627], 965:[0,257,364,597], 1300:[0,305,484,656]}
 
-#bb = bbns[num]
+bb = bbns[num+1]
 #bb = bbt[num-2550]
 #bb = bbt[-1]
 #bb = [650,850,650,900]
@@ -244,7 +244,8 @@ bbns = {800:[0,60,250,550], 819:[0,70,220,550], 1242:[0,280,450,650], 824:[0,122
 imr = im[bb[0]:bb[1],bb[2]-20:bb[3]+20]
 
 plt.figure()
-plt.imshow(imr)
+plt.imshow(imr) #,cmap='gray')
+plt.savefig('imre.png',bbox_inches='tight')
 plt.show()
 #%%
 a1 = imr - gaussian(imr,20)
@@ -281,20 +282,62 @@ rmo = remove_small_objects(fi3 > si/3 , min_size=10)
 rma = remove_small_objects(fa3 > sa/3 , min_size=30)
 
 nd = 1
-ytr = dilation(rma,disk(nd))
+ytr = dilation(rmo,disk(nd))
 
 plt.figure()
-plt.imshow( rma )
+plt.imshow( gmi ) # ,cmap='gray' )
+#plt.savefig('imr9.png',bbox_inches='tight')
 #plt.colorbar()
 plt.show()
 plt.figure()
-plt.imshow( rmo )
+plt.imshow( fmi )# ,cmap='gray')
+#plt.savefig('imr10.png',bbox_inches='tight')
 #plt.colorbar()
 plt.show()
 #plt.figure()
-#plt.imshow( mea )
+#plt.imshow( remove_small_objects(ytr,min_size= 100) )
 ##plt.colorbar()
 #plt.show()
+
+#%%
+num = 760 + 616
+
+ni = '{:04d}'.format(num)
+ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
+#ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
+im = np.array(ima,dtype='float') 
+
+sise,mima,dil = 150, 'min', True
+
+fib,imr,bbn = encontrar_fibn(im, bb, size=sise, mima=mima, dil=dil)
+tramos,bordes = spl.cortar_fibra_rap(fib,bbn,cortar_ruido=True)
+bo = bordes_reales(tramos,bordes,imprimir=False)
+tramos = spl.ordenar_fibra(tramos)
+curv,spline = spl.pegar_fibra(tramos,bo,window=27,s=25)
+
+t_spl = np.linspace(0,1,1000)
+xf, yf = splev(t_spl, spline)
+
+#plt.figure()
+#plt.imshow( fib )
+##plt.colorbar()
+#plt.show()
+
+#plt.figure()
+#for t in tramos:
+#    plt.plot(t[:,0],t[:,1],'o')
+#plt.plot(bordes[:,0],bordes[:,1],'ko')
+#plt.gca().invert_yaxis()
+#plt.savefig('imtr.png',bbox_inches='tight')
+#plt.show()
+
+plt.figure()
+plt.imshow(im)
+#plt.plot(xf, yf, 'r-')
+plt.xlim((bbn[1]-40,bbn[3]+40))
+plt.ylim((bbn[2]+40,bbn[0]-40))
+plt.savefig('im.png',bbox_inches='tight')
+plt.show()
 
 #%%
 #==============================================================================
