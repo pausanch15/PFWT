@@ -66,4 +66,26 @@ with h5py.File('alturas.hdf5', 'w') as f: #le cambio el nombre para mi
 
 
 #%%
+#==============================================================================
+# 
+#==============================================================================
+plt.figure()
+plt.imshow(ref-gris,cmap='gray')
+plt.savefig('imag2.png',bbox_inches='tight')
+plt.show()
 
+
+n = 700
+ni = '{:04d}'.format(n)
+ima = imread(r'C:\Users\tomfe\Documents\TOMAS\Facultad\Laboratorio 6\Datos Buenos\ID_0_C1S0001\ID_0_C1S000100'+ni+'.tif')
+#ima = imread(r'/home/paula/Documents/Fisica2021/L6y7/PFWT/ID_0_C1S0003/ID_0_C1S000300'+ni+'.tif')
+im = np.array(ima,dtype='float')
+
+
+plt.figure()
+plt.imshow(im ,cmap='gray' ) 
+plt.savefig('imag1.png',bbox_inches='tight')
+plt.show()
+#plt.figure()
+
+#%%
