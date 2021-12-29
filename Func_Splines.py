@@ -9,8 +9,85 @@ from scipy.signal import convolve2d, savgol_filter
 from itertools import permutations
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
+from skimage.filters import gaussian, frangi, sato, gabor
+from skimage.util import img_as_ubyte
+from skimage.filters.rank import minimum, maximum
+from skimage.morphology import thin, skeletonize, remove_small_objects, dilation, disk, binary_closing
 
 # @profile
+def encontrar_fibn(im,bb,nk=5,mima='min',divi=3,size=15, dil=True):
+    imr = im[bb[0]:bb[1],bb[2]-20:bb[3]+20]
+    a1 = imr - gaussian(imr,20)
+    a = gabor(a1,0.1)
+    b = a1 - 2*(a[0]-np.min(a[0]) + 10)
+    c = b - gaussian(b,30,mode='mirror')
+    d = gaussian(c,0.5)
+    
+    th = gabor(d*(d<0),0.7)
+    ttt = th[1]+th[0]
+    
+    ggg = gaussian(ttt,3,mode='mirror') - gaussian(ttt,4,mode='mirror')
+    hi = sato(ggg[:,20:-20],mode='reflect')
+    hii = hi / np.max(hi)
+    n = nk
+    ker = np.zeros((n,n))
+    ker[int(n/2),:] = 1
+    if mima == 'min':
+        mii = minimum( img_as_ubyte(hii),ker)
+        gmi = gaussian(mii,3) - gaussian(mii,4)
+        fmi = frangi(-gmi)
+        fi3 = (fmi/np.max(fmi))**3
+        si = np.std(fi3)
+    elif mima == 'max':
+        mii = maximum( img_as_ubyte(hii),disk(3))
+        gmi = gaussian(mii,5) - gaussian(mii,6)
+        fmi = frangi(-gmi)
+        fi3 = (fmi/np.max(fmi))**3
+        si = np.std(fi3)
+        
+    rmo = remove_small_objects(fi3 > si/divi , min_size=size)
+    if dil: drmo = dilation(rmo,disk(10))
+    else: drmo = rmo 
+    fib = skeletonize( drmo )
+    
+    lfib = np.where(fib) 
+    yma, xma = np.max(lfib[0]),np.max(lfib[1])
+    ymi, xmi = np.min(lfib[0]),np.min(lfib[1])
+    
+    xmax, ymax = min(1023,xma+bb[2]+1), min(1023,yma+bb[0]+1) 
+    xmin, ymin = max(0,xmi+bb[2]), max(0,ymi+bb[0])
+    bbs = [ymin,xmin,ymax,xmax]
+    fii = fib[ymi:yma+1,xmi:xma+1]
+    
+    return fii>0, imr, bbs
+
+def bordes_reales(tramos,bordes,imprimir=False):
+    if len(tramos) > 1 and len(bordes) > 2:
+        if imprimir: print('n° tramos:',len(tramos),'\nn° bordes:',len(bordes))
+        d0 = 0
+        for i in range(len(bordes)):
+            for j in range(i+1,len(bordes)):
+                b1 = np.array(bordes[i])
+                b2 = np.array(bordes[j])
+                dist = np.sum((b1-b2)**2)
+                if dist > d0:
+                    n,m = i,j
+                    d0 = dist
+        bo = np.array([bordes[n],bordes[m]])
+        return bo
+    else:
+        if imprimir: print('n° tramos:',len(tramos),'\nn° bordes:',len(bordes))
+        bo = bordes
+        return bo
+
+def largo_fib(xf,yf):
+    nf = len(xf)
+    td = 0
+    for i in range(1,nf):
+        di = np.sqrt( (xf[i]-xf[i-1])**2 + (yf[i]-yf[i-1])**2  )
+        td += di
+    return td
+
 def recupera_fibra(ima,gris,connec=0,std_mul=2.46):
 #    griss = np.asarray(gris)
 #    im = np.asarray(ima)
